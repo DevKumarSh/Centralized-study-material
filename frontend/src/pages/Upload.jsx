@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, CheckCircle, AlertTriangle, Info, ArrowLeft } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -51,12 +51,12 @@ const UploadPage = () => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       if (selectedFile.type !== 'application/pdf' && !selectedFile.name.endsWith('.pdf')) {
-        setErrorMsg('Only PDF documents are allowed.');
+        setErrorMsg('Only PDF documents are accepted on this platform.');
         setFile(null);
         return;
       }
       if (selectedFile.size > 50 * 1024 * 1024) {
-        setErrorMsg('File size exceeds the 50MB limit.');
+        setErrorMsg('Document size exceeds the 50MB limit.');
         setFile(null);
         return;
       }
@@ -68,23 +68,27 @@ const UploadPage = () => {
     }
   };
 
+  const removeSelectedFile = () => {
+    setFile(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (!user) {
-      setErrorMsg('Please log in to upload study materials.');
+      setErrorMsg('Please log in to submit study materials.');
       return;
     }
 
     if (!file) {
-      setErrorMsg('Please select a PDF file to upload.');
+      setErrorMsg('Please select a PDF document to upload.');
       return;
     }
 
     if (!title || !courseId || !semesterId || !subjectId || !materialTypeId) {
-      setErrorMsg('Please fill in all mandatory fields.');
+      setErrorMsg('Please fill in all mandatory fields marked with an asterisk (*).');
       return;
     }
 
@@ -102,17 +106,17 @@ const UploadPage = () => {
       formData.append('tags', tags);
 
       const res = await api.uploadMaterial(formData);
-      setSuccessMsg(res.message || 'Material uploaded and submitted for review!');
+      setSuccessMsg(res.message || 'Document uploaded successfully! It is now pending verification.');
 
       setTimeout(() => {
         navigate('/dashboard');
-      }, 2000);
+      }, 1500);
     } catch (err) {
       console.error('Upload failed:', err);
       if (err.status === 409) {
-        setErrorMsg(err.data?.message || 'Duplicate Document Detected! An identical file already exists on the platform.');
+        setErrorMsg('Duplicate Document Detected: An identical file (matching SHA-256 hash) already exists in the repository.');
       } else {
-        setErrorMsg(err.message || 'Failed to upload document. Please check your connection and try again.');
+        setErrorMsg(err.message || 'Failed to upload document. Please check your network and try again.');
       }
     } finally {
       setSubmitting(false);
@@ -120,67 +124,84 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      {/* Page Header */}
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-gray-900">Upload Study Material</h1>
         <p className="text-xs text-gray-500 mt-0.5">
-          Share verified lecture notes, question papers, and lab manuals with your college peers.
+          Submit lecture notes, question papers, or practical manuals for administrator verification and peer sharing.
         </p>
       </div>
 
       {/* Notifications */}
       {errorMsg && (
-        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-3 shadow-xs">
           <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-          <div>{errorMsg}</div>
+          <div className="leading-relaxed">{errorMsg}</div>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start gap-3">
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3 shadow-xs">
           <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-          <div>{successMsg}</div>
+          <div className="leading-relaxed">{successMsg}</div>
         </div>
       )}
 
-      {/* Upload Form Card */}
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-5">
-        {/* File Drag and Drop / Selection Zone */}
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
-            PDF Document *
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-5">
+        {/* Step 1: File Selection Area */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+            PDF File *
           </label>
-          <div className="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-xl p-6 text-center cursor-pointer transition-colors bg-gray-50/50 hover:bg-blue-50/20 relative">
-            <input
-              type="file"
-              accept=".pdf,application/pdf"
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            {file ? (
-              <div className="flex flex-col items-center gap-1.5">
-                <FileText className="w-8 h-8 text-blue-600" />
-                <p className="text-sm font-semibold text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload</p>
+          {file ? (
+            <div className="p-4 bg-blue-50/50 border border-blue-200 rounded-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-blue-600 text-white rounded-lg">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-900 truncate">{file.name}</p>
+                  <p className="text-[11px] text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB • Ready for cryptographic check</p>
+                </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-1.5">
-                <Upload className="w-7 h-7 text-gray-400" />
-                <p className="text-sm font-medium text-gray-800">
-                  Click to select or drag & drop PDF here
-                </p>
-                <p className="text-xs text-gray-500">
-                  PDF format only (Max 50MB) • SHA-256 duplicate validation applied
-                </p>
+              <button
+                type="button"
+                onClick={removeSelectedFile}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-md transition-colors"
+                title="Remove file"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50/50 hover:bg-blue-50/20 rounded-xl p-8 text-center cursor-pointer transition-colors relative">
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-800">
+                    <span className="text-blue-600 font-semibold">Click to upload</span> or drag and drop PDF
+                  </p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    Standard PDF only • Up to 50MB • Verified with SHA-256
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Title */}
+        {/* Step 2: Document Title */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
             Document Title *
           </label>
           <input
@@ -188,16 +209,16 @@ const UploadPage = () => {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. DBMS Complete Unit 1 & 2 Handwritten Notes"
-            className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            placeholder="e.g. Database Systems Complete Unit 1 & 2 Handwritten Notes"
+            className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           />
         </div>
 
-        {/* Course, Semester, Subject Cascading Dropdowns */}
+        {/* Step 3: Course, Semester, Subject Cascading Dropdowns */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Course */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
               Course *
             </label>
             <select
@@ -211,14 +232,14 @@ const UploadPage = () => {
             >
               <option value="">Select Course</option>
               {categories.courses.map(c => (
-                <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
               ))}
             </select>
           </div>
 
           {/* Semester */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
               Semester *
             </label>
             <select
@@ -239,16 +260,19 @@ const UploadPage = () => {
 
           {/* Subject */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
               Subject *
             </label>
             <select
               required
               value={subjectId}
               onChange={(e) => setSubjectId(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              disabled={!courseId || !semesterId}
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
             >
-              <option value="">Select Subject</option>
+              <option value="">
+                {!courseId || !semesterId ? 'Select Course & Sem first' : 'Select Subject'}
+              </option>
               {filteredSubjects.map(sub => (
                 <option key={sub.id} value={sub.id}>{sub.name}</option>
               ))}
@@ -256,11 +280,11 @@ const UploadPage = () => {
           </div>
         </div>
 
-        {/* Material Type and Academic Year */}
+        {/* Step 4: Category and Academic Year */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
-              Material Type *
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+              Material Category *
             </label>
             <select
               required
@@ -268,7 +292,7 @@ const UploadPage = () => {
               onChange={(e) => setMaterialTypeId(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
-              <option value="">Select Type</option>
+              <option value="">Select Category</option>
               {categories.materialTypes.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
@@ -276,7 +300,7 @@ const UploadPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
               Academic Year
             </label>
             <input
@@ -289,32 +313,40 @@ const UploadPage = () => {
           </div>
         </div>
 
-        {/* Description */}
+        {/* Step 5: Description */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
-            Description / Topics Covered (Optional)
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            Topics Covered / Summary (Optional)
           </label>
           <textarea
             rows="3"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Briefly describe what this note covers..."
-            className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            placeholder="Briefly outline topics covered, syllabus unit numbers, or questions included..."
+            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           ></textarea>
         </div>
 
-        {/* Tags */}
+        {/* Step 6: Tags */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
-            Tags (Comma-separated)
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            Search Tags (Comma-separated)
           </label>
           <input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="e.g. sql, normalization, mid-term"
+            placeholder="e.g. relational-algebra, b-trees, er-diagrams"
             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           />
+        </div>
+
+        {/* Quality Notice */}
+        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-[11px] text-gray-500 flex items-start gap-2">
+          <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <strong>Moderation Policy:</strong> Submissions are reviewed to verify scan readability and course alignment. Duplicate documents are automatically flagged.
+          </div>
         </div>
 
         {/* Submit Button */}
@@ -322,17 +354,17 @@ const UploadPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs disabled:opacity-50 flex items-center gap-2"
           >
             {submitting ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Validating & Uploading...
+                Verifying & Submitting...
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4" />
-                Submit for Verification
+                <Upload className="w-3.5 h-3.5" />
+                Submit Document
               </>
             )}
           </button>

@@ -1,28 +1,36 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Upload, Search, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Upload, Search, ShieldCheck, ArrowRight, FileText, Check, Sparkles, Layers } from 'lucide-react';
 
 const Landing = () => {
+  const popularCourses = [
+    { name: 'Master of Computer Applications', code: 'MCA', desc: 'DBMS, OS, Data Structures, Web Tech' },
+    { name: 'Bachelor of Computer Applications', code: 'BCA', desc: 'C/C++, Networking, Software Eng' },
+    { name: 'B.Tech Computer Science', code: 'BTech-CS', desc: 'Algorithms, AI/ML, Cloud Computing' },
+    { name: 'M.Sc. Information Technology', code: 'MSc-IT', desc: 'Info Security, Cryptography, Mobile Dev' }
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center space-y-16 py-10 max-w-5xl mx-auto">
+    <div className="space-y-16 py-6 max-w-5xl mx-auto">
       {/* Hero Section */}
-      <div className="text-center max-w-3xl space-y-5">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          Centralized Academic Repository
+      <div className="text-center space-y-6 pt-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <span>Curated Academic Repository • Free & Open for Students</span>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
-          The Central Hub for <span className="text-blue-600">College Study Materials</span>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.15]">
+          Your Single Source for <br className="hidden sm:inline" />
+          <span className="text-blue-600">Verified Study Materials</span>
         </h1>
 
         <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Find, share, and organize verified lecture notes, previous-year question papers, and lab manuals. Simple, structured, and organized by course.
+          Say goodbye to lost files in WhatsApp and Telegram groups. Discover, preview, and share organized lecture notes, PYQs, and lab manuals verified for your exact syllabus.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2">
           <Link
             to="/browse"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all"
           >
             <Search className="w-4 h-4" />
             Browse Materials
@@ -32,55 +40,142 @@ const Landing = () => {
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-medium rounded-lg shadow-sm transition-colors"
           >
             <Upload className="w-4 h-4" />
-            Upload Notes
+            Upload Document
           </Link>
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left space-y-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-            <Search className="h-5 w-5" />
-          </div>
-          <h3 className="text-base font-semibold text-gray-900">Easy to Discover</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Organized strictly by Course, Semester, and Subject. Search by keyword or apply filters to find notes in seconds.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left space-y-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-          <h3 className="text-base font-semibold text-gray-900">Admin Verified</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Every submission is reviewed by administrators before being published, ensuring syllabus alignment and high quality.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left space-y-3">
-          <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
-            <BookOpen className="h-5 w-5" />
-          </div>
-          <h3 className="text-base font-semibold text-gray-900">Duplicate Free</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            SHA-256 file hashing and document similarity detection prevent identical documents from cluttering your repository.
-          </p>
+        {/* Quick Highlights Strip */}
+        <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-gray-500 border-t border-gray-200/80 max-w-xl mx-auto">
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-600" /> Admin Verified</span>
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-600" /> Duplicate Protected</span>
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-600" /> Fast PDF Preview</span>
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-600" /> 100% Free</span>
         </div>
       </div>
 
-      {/* Quick Action Banner */}
-      <div className="w-full bg-white rounded-xl border border-gray-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-        <div>
-          <h4 className="text-base font-semibold text-gray-900">Ready to share your notes?</h4>
-          <p className="text-sm text-gray-500 mt-0.5">Help your classmates prepare for exams and assignments.</p>
+      {/* Featured Academic Courses */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Academic Programs</h2>
+            <p className="text-xs text-gray-500">Explore materials tailored to your curriculum</p>
+          </div>
+          <Link to="/browse" className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+            View All <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {popularCourses.map((c) => (
+            <Link
+              key={c.code}
+              to={`/browse?search=${encodeURIComponent(c.code)}`}
+              className="bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-xs transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <span className="inline-block px-2 py-0.5 rounded text-xs font-mono font-semibold bg-gray-100 text-gray-800 border border-gray-200 mb-2">
+                  {c.code}
+                </span>
+                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {c.name}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{c.desc}</p>
+              </div>
+              <div className="pt-3 mt-3 border-t border-gray-100 text-xs font-medium text-blue-600 flex items-center gap-1">
+                Explore subjects <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+            <Layers className="h-4.5 w-4.5" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900">Academic Hierarchy</h3>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Every document is tagged with Course, Semester, Subject, and Academic Year. Filter with one click to locate the exact unit you need for exams.
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <ShieldCheck className="h-4.5 w-4.5" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900">Quality Verified</h3>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Submissions go through a verification workflow where coordinators inspect syllabus relevance and readability before publishing publicly.
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-3">
+          <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+            <FileText className="h-4.5 w-4.5" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900">Duplicate Detection</h3>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            SHA-256 byte-level cryptographic hashing blocks identical uploads instantly, saving storage and ensuring students find the canonical notes.
+          </p>
+        </div>
+      </div>
+
+      {/* 3 Step Workflow */}
+      <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-xs space-y-6">
+        <div className="text-center max-w-xl mx-auto space-y-1.5">
+          <h2 className="text-xl font-bold text-gray-900">How It Works</h2>
+          <p className="text-xs text-gray-500">A streamlined workflow designed specifically for college students</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          <div className="flex flex-col items-center text-center space-y-2.5">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center">
+              1
+            </div>
+            <h4 className="text-sm font-semibold text-gray-900">Search by Subject</h4>
+            <p className="text-xs text-gray-500">
+              Filter by your semester and subject code to find relevant notes and previous-year papers.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center space-y-2.5">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center">
+              2
+            </div>
+            <h4 className="text-sm font-semibold text-gray-900">In-Browser Preview</h4>
+            <p className="text-xs text-gray-500">
+              Inspect PDFs directly in your browser without cluttering your downloads folder.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center space-y-2.5">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center">
+              3
+            </div>
+            <h4 className="text-sm font-semibold text-gray-900">Contribute & Track</h4>
+            <p className="text-xs text-gray-500">
+              Upload your own notes and track moderation status and peer download counts in real-time.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom CTA Banner */}
+      <div className="bg-blue-600 rounded-xl p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <h3 className="text-xl font-bold">Have study materials to share?</h3>
+          <p className="text-xs text-blue-100 max-w-lg">
+            Upload your handwritten notes, practical files, or lab manuals to help your classmates ace their semester exams.
+          </p>
         </div>
         <Link
           to="/upload"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white hover:bg-gray-100 text-blue-700 rounded-lg text-sm font-semibold transition-colors shadow-xs whitespace-nowrap"
         >
-          Get Started <ArrowRight className="w-4 h-4" />
+          <Upload className="w-4 h-4" />
+          Upload Document
         </Link>
       </div>
     </div>

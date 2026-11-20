@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, Lock, Mail, User, AlertCircle, CheckCircle, RefreshCw, Info, KeyRound, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, User, AlertCircle, CheckCircle, RefreshCw, Info, KeyRound, ArrowLeft, Eye, EyeOff, GraduationCap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Auth = () => {
@@ -23,6 +23,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -102,7 +103,7 @@ const Auth = () => {
         setShowResend(true);
         setVerificationPendingEmail(email);
       } else if (msg.toLowerCase().includes('invalid login credentials')) {
-        setErrorMsg('Invalid email or password. Please verify your credentials, or click "Forgot Password?" below to reset it.');
+        setErrorMsg('Invalid email or password. Please verify your credentials or click "Forgot Password?" below to reset it.');
         setShowResend(true);
         setVerificationPendingEmail(email);
       } else if (msg.toLowerCase().includes('user already registered')) {
@@ -137,27 +138,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 space-y-5">
+    <div className="max-w-md mx-auto py-6 sm:py-10 space-y-5">
       {/* Header */}
       <div className="text-center space-y-1.5">
-        <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 mx-auto mb-2">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs mx-auto mb-2">
           {mode === 'forgot' || mode === 'update-password' ? (
             <KeyRound className="w-5 h-5" />
           ) : (
-            <BookOpen className="w-5 h-5" />
+            <GraduationCap className="w-5 h-5" />
           )}
         </div>
         <h1 className="text-xl font-bold text-gray-900">
-          {mode === 'login' && 'Welcome Back'}
+          {mode === 'login' && 'Sign in to StudyMaterial'}
           {mode === 'register' && 'Create Student Account'}
           {mode === 'forgot' && 'Reset Your Password'}
           {mode === 'update-password' && 'Set New Password'}
         </h1>
         <p className="text-xs text-gray-500">
-          {mode === 'login' && 'Sign in to access your study dashboard and uploaded materials'}
-          {mode === 'register' && 'Join the college study material sharing community'}
-          {mode === 'forgot' && 'Enter your college email and we will send you a password reset link'}
-          {mode === 'update-password' && 'Enter your new password below to regain access to your account'}
+          {mode === 'login' && 'Enter your credentials to access study materials and your dashboard'}
+          {mode === 'register' && 'Join your college community to share and access verified materials'}
+          {mode === 'forgot' && 'Enter your registered college email to receive a recovery link'}
+          {mode === 'update-password' && 'Enter your new password below to regain account access'}
         </p>
       </div>
 
@@ -166,7 +167,7 @@ const Auth = () => {
         <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-            <span>{errorMsg}</span>
+            <span className="leading-relaxed">{errorMsg}</span>
           </div>
 
           <div className="pt-2 border-t border-rose-200 flex items-center justify-between gap-2 flex-wrap">
@@ -189,7 +190,7 @@ const Auth = () => {
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-rose-100/50 text-rose-700 border border-rose-300 rounded text-xs font-medium transition-colors disabled:opacity-50 ml-auto"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded text-xs font-medium transition-colors disabled:opacity-50 ml-auto"
               >
                 {resending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
                 Resend Confirmation
@@ -203,7 +204,7 @@ const Auth = () => {
         <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-            <span>{successMsg}</span>
+            <span className="leading-relaxed">{successMsg}</span>
           </div>
 
           {showResend && (
@@ -213,7 +214,7 @@ const Auth = () => {
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded text-xs font-medium transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded text-xs font-medium transition-colors disabled:opacity-50"
               >
                 {resending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
                 Resend Again
@@ -223,8 +224,8 @@ const Auth = () => {
         </div>
       )}
 
-      {/* Main Card */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+      {/* Main Form Card */}
+      <div className="bg-white p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
         {/* Toggle tabs for Login / Register */}
         {(mode === 'login' || mode === 'register') && (
           <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
@@ -232,7 +233,7 @@ const Auth = () => {
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
               className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                mode === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                mode === 'login' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Sign In
@@ -241,7 +242,7 @@ const Auth = () => {
               type="button"
               onClick={() => { setMode('register'); setErrorMsg(''); setSuccessMsg(''); }}
               className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                mode === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                mode === 'register' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Register
@@ -255,7 +256,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors font-medium"
+              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to Sign In
@@ -267,7 +268,7 @@ const Auth = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
-          {/* Full Name (Registration only) */}
+          {/* Full Name */}
           {mode === 'register' && (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
@@ -281,13 +282,13 @@ const Auth = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Dev Kumar"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
           )}
 
-          {/* Email field */}
+          {/* Email */}
           {mode !== 'update-password' && (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
@@ -301,13 +302,13 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@college.edu"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
           )}
 
-          {/* Password field */}
+          {/* Password with Eye Toggle */}
           {mode !== 'forgot' && (
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -331,19 +332,26 @@ const Auth = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   minLength="6"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-9 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
               </div>
             </div>
           )}
 
-          {/* Confirm Password (update-password only) */}
+          {/* Confirm Password */}
           {mode === 'update-password' && (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
@@ -352,13 +360,13 @@ const Auth = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   minLength="6"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -367,7 +375,7 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -375,11 +383,11 @@ const Auth = () => {
                 Please wait...
               </>
             ) : mode === 'login' ? (
-              'Sign In to Account'
+              'Sign In'
             ) : mode === 'register' ? (
               'Create Account'
             ) : mode === 'forgot' ? (
-              'Send Password Reset Link'
+              'Send Reset Link'
             ) : (
               'Save New Password'
             )}
@@ -387,15 +395,15 @@ const Auth = () => {
         </form>
 
         {/* Notice Box */}
-        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-600 flex items-start gap-2">
+        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500 flex items-start gap-2">
           <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="text-[11px] leading-relaxed">
             {mode === 'forgot' ? (
-              <span>Check your email inbox and spam folder for the recovery link.</span>
+              <span>Check your email inbox and spam folder for the secure recovery link.</span>
             ) : mode === 'update-password' ? (
-              <span>Ensure your password is at least 6 characters with good complexity.</span>
+              <span>Choose a strong password with at least 6 characters.</span>
             ) : (
-              <span>Supabase Authentication ensures secure sessions and data protection.</span>
+              <span>Academic access is authenticated securely via Supabase Auth.</span>
             )}
           </div>
         </div>

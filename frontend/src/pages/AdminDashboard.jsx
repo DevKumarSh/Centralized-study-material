@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import {
-  Shield, CheckCircle2, XCircle, Clock, FileText, AlertTriangle, Users, BookOpen,
-  Download, Search, Filter, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert
+  Shield, CheckCircle2, XCircle, Clock, Users,
+  Download, Search, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert, AlertCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { StatusBadge, MaterialTypeBadge, RoleBadge } from '../components/common/Badge';
+import { PdfPreviewModal } from '../components/common/PdfPreviewModal';
+import { ConfirmModal } from '../components/common/ConfirmModal';
 
 const AdminDashboard = () => {
   const { user, profile, isAdmin } = useAuth();
@@ -24,19 +26,21 @@ const AdminDashboard = () => {
   // Data states
   const [pendingMaterials, setPendingMaterials] = useState([]);
   const [allMaterials, setAllMaterials] = useState([]);
-  const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState({ courses: [], semesters: [], materialTypes: [], subjects: [] });
 
   // Filters / Search
   const [materialsFilterStatus, setMaterialsFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   // UI / Action states
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [rejectionModal, setRejectionModal] = useState({ isOpen: false, materialId: null, reason: '' });
-  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({ isOpen: false, materialId: null, title: '' });
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, url: '', title: '', fileName: '', materialId: null });
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   // Add Category Forms
   const [newCourse, setNewCourse] = useState({ name: '', code: '' });
@@ -44,8 +48,8 @@ const AdminDashboard = () => {
   const [categorySubmitting, setCategorySubmitting] = useState(false);
 
   const showToast = (message, type = 'success') => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3500);
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3500);
   };
 
   const loadData = async () => {
@@ -125,14 +129,23 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteMaterial = async (materialId) => {
-    if (!window.confirm('Are you sure you want to permanently delete this material and its file?')) return;
+  const triggerDelete = (item) => {
+    setConfirmDeleteModal({
+      isOpen: true,
+      materialId: item.id,
+      title: item.title
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteModal.materialId) return;
     try {
-      setActionLoadingId(materialId);
-      await api.deleteMaterial(materialId);
+      setActionLoadingId(confirmDeleteModal.materialId);
+      await api.deleteMaterial(confirmDeleteModal.materialId);
       showToast('Material permanently deleted.');
-      setAllMaterials(prev => prev.filter(m => m.id !== materialId));
-      setPendingMaterials(prev => prev.filter(m => m.id !== materialId));
+      setAllMaterials(prev => prev.filter(m => m.id !== confirmDeleteModal.materialId));
+      setPendingMaterials(prev => prev.filter(m => m.id !== confirmDeleteModal.materialId));
+      setConfirmDeleteModal({ isOpen: false, materialId: null, title: '' });
     } catch (err) {
       showToast(err.message || 'Failed to delete material', 'error');
     } finally {
@@ -191,107 +204,119 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDownload = async (materialId, fileName) => {
+  const handlePreview = async (item) => {
     try {
-      const res = await api.getDownloadUrl(materialId);
+      const res = await api.getDownloadUrl(item.id);
       if (res.downloadUrl) {
-        window.open(res.downloadUrl, '_blank');
+        setPreviewModal({
+          isOpen: true,
+          url: res.downloadUrl,
+          title: item.title,
+          fileName: item.material_files?.file_name || 'Document.pdf',
+          materialId: item.id
+        });
       }
     } catch (err) {
       showToast('Failed to retrieve file preview link', 'error');
     }
   };
 
+  const filteredUsers = users.filter(u => {
+    if (!userSearchTerm) return true;
+    const term = userSearchTerm.toLowerCase();
+    return (u.email || '').toLowerCase().includes(term) || (u.full_name || '').toLowerCase().includes(term);
+  });
+
   return (
     <div className="space-y-6">
-      {/* Toast Alert */}
-      {notification.show && (
+      {/* Toast Notification */}
+      {toast.show && (
         <div
-          className={`fixed top-20 right-6 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2.5 border text-xs font-medium transition-all ${
-            notification.type === 'error'
+          className={`fixed top-20 right-6 z-50 px-4 py-3 rounded-lg shadow-md flex items-center gap-2.5 border text-xs font-medium transition-all ${
+            toast.type === 'error'
               ? 'bg-rose-50 border-rose-200 text-rose-800'
               : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
           }`}
         >
-          {notification.type === 'error' ? <AlertTriangle className="w-4 h-4 text-rose-600" /> : <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-          <span>{notification.message}</span>
+          {toast.type === 'error' ? <AlertCircle className="w-4 h-4 text-rose-600" /> : <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+          <span>{toast.message}</span>
         </div>
       )}
 
       {/* Top Banner */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-xl border border-gray-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 flex-shrink-0">
             <Shield className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900">Administrator Portal</h1>
+              <h1 className="text-xl font-bold text-gray-900">Administrator Console</h1>
               <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                SYSTEM MODERATOR
+                PORTAL MODERATOR
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              Review document uploads, manage academic categories, and maintain platform quality.
+              Review pending submissions, manage courses, and supervise platform permissions.
             </p>
           </div>
         </div>
         <button
           onClick={loadData}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-medium transition-colors border border-gray-300 shadow-sm self-start md:self-auto"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-medium transition-colors border border-gray-200 shadow-xs self-start md:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh Data
+          Refresh
         </button>
       </div>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-amber-700 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" /> Pending
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-amber-700 flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-amber-600" /> Pending
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalPending || 0}</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-emerald-700 flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-emerald-700 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Approved
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalApproved || 0}</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-rose-700 flex items-center gap-1">
-            <XCircle className="w-3.5 h-3.5" /> Rejected
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-rose-700 flex items-center gap-1">
+            <XCircle className="w-3.5 h-3.5 text-rose-600" /> Rejected
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalRejected || 0}</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-blue-700 flex items-center gap-1">
-            <Users className="w-3.5 h-3.5" /> Students
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-blue-700 flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-blue-600" /> Students
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalUsers || 0}</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-gray-700 flex items-center gap-1">
-            <Download className="w-3.5 h-3.5" /> Downloads
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-gray-600 flex items-center gap-1">
+            <Download className="w-3.5 h-3.5 text-gray-500" /> Downloads
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalDownloads || 0}</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-[11px] font-medium uppercase text-purple-700 flex items-center gap-1">
-            <ShieldAlert className="w-3.5 h-3.5" /> Reports
+        <div className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs">
+          <p className="text-[11px] font-semibold uppercase text-purple-700 flex items-center gap-1">
+            <ShieldAlert className="w-3.5 h-3.5 text-purple-600" /> Reports
           </p>
           <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingReports || 0}</h3>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 space-x-1 overflow-x-auto">
+      <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 space-x-1 overflow-x-auto text-xs">
         <button
           onClick={() => setActiveTab('pending')}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3.5 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'pending'
-              ? 'bg-white text-gray-900 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-xs font-semibold'
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -300,9 +325,9 @@ const AdminDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('materials')}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3.5 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'materials'
-              ? 'bg-white text-gray-900 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-xs font-semibold'
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -311,9 +336,9 @@ const AdminDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('categories')}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3.5 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'categories'
-              ? 'bg-white text-gray-900 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-xs font-semibold'
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -322,9 +347,9 @@ const AdminDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+          className={`px-3.5 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'users'
-              ? 'bg-white text-gray-900 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-xs font-semibold'
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -335,11 +360,11 @@ const AdminDashboard = () => {
 
       {/* TAB 1: PENDING VERIFICATION QUEUE */}
       {activeTab === 'pending' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-200/90 overflow-hidden shadow-xs">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-gray-900">Pending Moderation Queue</h2>
-              <p className="text-xs text-gray-500">Review submitted academic notes before publishing to students</p>
+              <p className="text-xs text-gray-500">Inspect uploaded notes for scan clarity and syllabus relevance before publishing</p>
             </div>
           </div>
 
@@ -351,8 +376,8 @@ const AdminDashboard = () => {
           ) : pendingMaterials.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
               <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2 opacity-80" />
-              <h3 className="text-sm font-semibold text-gray-900">Queue is clear</h3>
-              <p className="text-xs mt-0.5">All uploaded materials have been verified and processed.</p>
+              <h3 className="text-sm font-semibold text-gray-900">Verification queue is clear</h3>
+              <p className="text-xs text-gray-400 mt-0.5">All student uploads have been verified.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -362,8 +387,8 @@ const AdminDashboard = () => {
                     <th className="px-4 py-3">Document</th>
                     <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">Uploader</th>
-                    <th className="px-4 py-3">File Details</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3">File Specs</th>
+                    <th className="px-4 py-3 text-right">Moderation Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -372,9 +397,9 @@ const AdminDashboard = () => {
                       <td className="px-4 py-3.5 max-w-xs">
                         <div className="font-semibold text-gray-900 text-sm truncate">{item.title}</div>
                         {item.description && <div className="text-gray-500 text-xs truncate mt-0.5">{item.description}</div>}
-                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-700 font-mono border border-gray-200">
-                          {item.material_types?.name || 'Notes'}
-                        </span>
+                        <div className="mt-1">
+                          <MaterialTypeBadge type={item.material_types?.name} />
+                        </div>
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="font-medium text-gray-800">{item.courses?.code || 'Course'} · {item.semesters?.label || 'Sem'}</div>
@@ -387,10 +412,10 @@ const AdminDashboard = () => {
                       <td className="px-4 py-3.5 font-mono text-[11px] text-gray-500">
                         <div>{(item.material_files?.file_size ? (item.material_files.file_size / (1024 * 1024)).toFixed(2) : '1.2')} MB (PDF)</div>
                         <button
-                          onClick={() => handleDownload(item.id, item.material_files?.file_name)}
+                          onClick={() => handlePreview(item)}
                           className="text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-1 font-sans font-medium"
                         >
-                          <Eye className="w-3 h-3" /> Preview
+                          <Eye className="w-3 h-3" /> Preview PDF
                         </button>
                       </td>
                       <td className="px-4 py-3.5 text-right">
@@ -398,7 +423,7 @@ const AdminDashboard = () => {
                           <button
                             onClick={() => handleApprove(item.id)}
                             disabled={actionLoadingId === item.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-medium shadow-xs transition-colors disabled:opacity-50"
                           >
                             <Check className="w-3.5 h-3.5" /> Approve
                           </button>
@@ -422,7 +447,7 @@ const AdminDashboard = () => {
 
       {/* TAB 2: ALL DOCUMENTS */}
       {activeTab === 'materials' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm space-y-3.5 p-4">
+        <div className="bg-white rounded-xl border border-gray-200/90 overflow-hidden shadow-xs space-y-3.5 p-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -470,23 +495,15 @@ const AdminDashboard = () => {
                       {item.courses?.code} • {item.subjects?.name || 'General'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        item.status === 'approved'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : item.status === 'pending'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-rose-50 text-rose-700 border border-rose-200'
-                      }`}>
-                        {item.status.toUpperCase()}
-                      </span>
+                      <StatusBadge status={item.status} reason={item.rejection_reason} />
                     </td>
                     <td className="px-4 py-3 font-mono text-gray-500">{item.download_count || 0}</td>
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => handleDeleteMaterial(item.id)}
+                        onClick={() => triggerDelete(item)}
                         disabled={actionLoadingId === item.id}
                         className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                        title="Delete Permanently"
+                        title="Delete Document"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -503,13 +520,13 @@ const AdminDashboard = () => {
       {activeTab === 'categories' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Create Course Form */}
-          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
               <Plus className="w-4 h-4 text-blue-600" /> Add Academic Course / Program
             </h3>
             <form onSubmit={handleCreateCourse} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Course Full Name</label>
+                <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Course Full Name</label>
                 <input
                   type="text"
                   required
@@ -520,7 +537,7 @@ const AdminDashboard = () => {
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Course Code / Short Name</label>
+                <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Course Code / Short Form</label>
                 <input
                   type="text"
                   required
@@ -533,14 +550,14 @@ const AdminDashboard = () => {
               <button
                 type="submit"
                 disabled={categorySubmitting}
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-xs transition-colors disabled:opacity-50"
               >
                 Create Course
               </button>
             </form>
 
             <div className="pt-3 border-t border-gray-100">
-              <p className="text-[11px] font-medium uppercase text-gray-500 mb-2">Active Courses</p>
+              <p className="text-[11px] font-semibold uppercase text-gray-500 mb-2">Active Courses</p>
               <div className="flex flex-wrap gap-1.5">
                 {categories.courses.map(c => (
                   <span key={c.id} className="px-2 py-0.5 rounded text-xs bg-gray-100 border border-gray-200 text-gray-700 font-mono">
@@ -552,14 +569,14 @@ const AdminDashboard = () => {
           </div>
 
           {/* Create Subject Form */}
-          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
               <Plus className="w-4 h-4 text-blue-600" /> Add Subject to Curriculum
             </h3>
             <form onSubmit={handleCreateSubject} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Course</label>
+                  <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Course</label>
                   <select
                     required
                     value={newSubject.course_id}
@@ -573,7 +590,7 @@ const AdminDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Semester</label>
+                  <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Semester</label>
                   <select
                     required
                     value={newSubject.semester_id}
@@ -589,7 +606,7 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Subject Name</label>
+                <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Subject Name</label>
                 <input
                   type="text"
                   required
@@ -601,7 +618,7 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium uppercase text-gray-600 mb-1">Subject Code</label>
+                <label className="block text-[11px] font-semibold uppercase text-gray-600 mb-1">Subject Code</label>
                 <input
                   type="text"
                   required
@@ -615,7 +632,7 @@ const AdminDashboard = () => {
               <button
                 type="submit"
                 disabled={categorySubmitting}
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-xs transition-colors disabled:opacity-50"
               >
                 Add Subject
               </button>
@@ -626,10 +643,22 @@ const AdminDashboard = () => {
 
       {/* TAB 4: USER ROLES MANAGEMENT */}
       {activeTab === 'users' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900">User Role Administration</h2>
-            <p className="text-xs text-gray-500">Promote student accounts to administrators or manage permissions</p>
+        <div className="bg-white rounded-xl border border-gray-200/90 overflow-hidden shadow-xs space-y-3 p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">User Role Administration</h2>
+              <p className="text-xs text-gray-500">Manage user access levels across student and administrator tiers</p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <input
+                type="text"
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+                placeholder="Search user email or name..."
+                className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -637,29 +666,23 @@ const AdminDashboard = () => {
               <thead className="bg-gray-50 text-[11px] uppercase font-semibold text-gray-500 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3">User</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Current Role</th>
-                  <th className="px-4 py-3 text-right">Role Toggle</th>
+                  <th className="px-4 py-3">Email Address</th>
+                  <th className="px-4 py-3">Active Role</th>
+                  <th className="px-4 py-3 text-right">Role Management</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <tr key={u.id} className="hover:bg-gray-50/70">
                     <td className="px-4 py-3 font-medium text-gray-900 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white text-[11px] font-bold">
+                      <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold">
                         {u.full_name?.[0] || u.email?.[0]?.toUpperCase()}
                       </div>
                       <span>{u.full_name || 'Student'}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-500">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        u.role === 'admin'
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                          : 'bg-blue-50 text-blue-700 border border-blue-100'
-                      }`}>
-                        {u.role ? u.role.toUpperCase() : 'STUDENT'}
-                      </span>
+                      <RoleBadge role={u.role} />
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
@@ -681,6 +704,27 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* PDF PREVIEW MODAL */}
+      <PdfPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, url: '', title: '', fileName: '', materialId: null })}
+        url={previewModal.url}
+        title={previewModal.title}
+        fileName={previewModal.fileName}
+      />
+
+      {/* CONFIRM DELETE MODAL */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ isOpen: false, materialId: null, title: '' })}
+        onConfirm={handleConfirmDelete}
+        title="Permanently Delete Material?"
+        message={`Are you sure you want to delete "${confirmDeleteModal.title}"? This will remove the file from storage and database permanently.`}
+        confirmText="Delete Document"
+        isDestructive={true}
+        isLoading={actionLoadingId === confirmDeleteModal.materialId}
+      />
 
       {/* REJECTION REASON MODAL */}
       {rejectionModal.isOpen && (
@@ -729,7 +773,7 @@ const AdminDashboard = () => {
               <button
                 type="button"
                 onClick={handleRejectConfirm}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow-sm"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow-xs"
               >
                 Confirm Rejection
               </button>
