@@ -1,6 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Download, BookOpen, Eye, X, CheckCircle } from 'lucide-react';
+import {
+  Search,
+  Download,
+  BookOpen,
+  Eye,
+  X,
+  CheckCircle,
+  GraduationCap,
+  Calendar,
+  Tag,
+  ChevronDown,
+  SlidersHorizontal,
+  RotateCcw
+} from 'lucide-react';
 import { api } from '../services/api';
 import { MaterialTypeBadge } from '../components/common/Badge';
 import { PdfPreviewModal } from '../components/common/PdfPreviewModal';
@@ -12,6 +25,7 @@ const Browse = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
   const [previewModal, setPreviewModal] = useState({ isOpen: false, url: '', title: '', fileName: '', materialId: null });
+  const searchInputRef = useRef(null);
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -19,6 +33,18 @@ const Browse = () => {
   const [selectedSemester, setSelectedSemester] = useState(searchParams.get('semester_id') || '');
   const [selectedSubject, setSelectedSubject] = useState(searchParams.get('subject_id') || '');
   const [selectedType, setSelectedType] = useState(searchParams.get('material_type_id') || '');
+
+  // Keyboard shortcut Ctrl+K to focus search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Load Categories on mount
   useEffect(() => {
@@ -123,109 +149,258 @@ const Browse = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header and Filter Card */}
-      <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
-        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-          {/* Main Search Input */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+            Study Materials Directory
+          </h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Search and filter syllabus-verified lecture notes, question banks, and references.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+            Verified Materials
+          </span>
+        </div>
+      </div>
+
+      {/* Unified Search & Filter Card */}
+      <div className="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden">
+        {/* Primary Search Input */}
+        <div className="p-4 sm:p-5 border-b border-gray-100 bg-gray-50/40">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by topic, unit, subject name (e.g. 'Normalization', 'MCA102')..."
-              className="w-full pl-9.5 pr-8 py-2.5 bg-gray-50/60 hover:bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
+              placeholder="Search by topic, unit, subject name, or course code (e.g. 'Normalization', 'MCA102')..."
+              className="w-full pl-10 pr-24 py-2.5 bg-white border border-gray-200 hover:border-gray-300 focus:border-blue-500 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-2xs"
             />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 self-end md:self-auto">
-            {activeFilterCount > 0 && (
-              <button
-                onClick={clearFilters}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors border border-gray-200"
-              >
-                <X className="w-3.5 h-3.5" />
-                Clear Filters ({activeFilterCount})
-              </button>
-            )}
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                  title="Clear search query"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md select-none">
+                Ctrl+K
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Dropdown Filters Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-gray-100">
-          {/* Course */}
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Course</label>
-            <select
-              value={selectedCourse}
-              onChange={(e) => {
-                setSelectedCourse(e.target.value);
-                setSelectedSubject('');
-              }}
-              className="w-full py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-            >
-              <option value="">All Courses</option>
-              {categories.courses.map(c => (
-                <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
-              ))}
-            </select>
+        <div className="p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+              <span>Refine By Category</span>
+              {activeFilterCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                  {activeFilterCount}
+                </span>
+              )}
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset all
+              </button>
+            )}
           </div>
 
-          {/* Semester */}
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Semester</label>
-            <select
-              value={selectedSemester}
-              onChange={(e) => {
-                setSelectedSemester(e.target.value);
-                setSelectedSubject('');
-              }}
-              className="w-full py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-            >
-              <option value="">All Semesters</option>
-              {categories.semesters.map(s => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
+          {/* 4 Clean Dropdowns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Course */}
+            <div>
+              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                Course
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedCourse}
+                  onChange={(e) => {
+                    setSelectedCourse(e.target.value);
+                    setSelectedSubject('');
+                  }}
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                    selectedCourse ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <option value="">All Courses</option>
+                  {categories.courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Semester */}
+            <div>
+              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                Semester
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedSemester}
+                  onChange={(e) => {
+                    setSelectedSemester(e.target.value);
+                    setSelectedSubject('');
+                  }}
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                    selectedSemester ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <option value="">All Semesters</option>
+                  {categories.semesters.map(s => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                Subject
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                    selectedSubject ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <option value="">All Subjects</option>
+                  {availableSubjects.map(sub => (
+                    <option key={sub.id} value={sub.id}>{sub.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Material Type */}
+            <div>
+              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-gray-400" />
+                Category
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                    selectedType ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <option value="">All Types</option>
+                  {categories.materialTypes.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
           </div>
 
-          {/* Subject */}
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Subject</label>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-            >
-              <option value="">All Subjects</option>
-              {availableSubjects.map(sub => (
-                <option key={sub.id} value={sub.id}>{sub.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* Active Filter Pills Strip */}
+          {activeFilterCount > 0 && (
+            <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-gray-400 font-medium mr-1">Active filters:</span>
 
-          {/* Material Type */}
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Category</label>
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-            >
-              <option value="">All Types</option>
-              {categories.materialTypes.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          </div>
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
+                  Search: <span className="font-semibold text-gray-900">"{searchTerm}"</span>
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="hover:text-red-600 p-0.5 rounded transition-colors"
+                    title="Remove search filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {selectedCourse && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-800 rounded-md text-xs font-medium border border-blue-200">
+                  Course: <span className="font-semibold">{categories.courses.find(c => c.id === selectedCourse)?.code || 'Selected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedCourse(''); setSelectedSubject(''); }}
+                    className="hover:text-red-600 p-0.5 rounded transition-colors"
+                    title="Remove course filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {selectedSemester && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-800 rounded-md text-xs font-medium border border-blue-200">
+                  Semester: <span className="font-semibold">{categories.semesters.find(s => s.id === selectedSemester)?.label || 'Selected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedSemester(''); setSelectedSubject(''); }}
+                    className="hover:text-red-600 p-0.5 rounded transition-colors"
+                    title="Remove semester filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {selectedSubject && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-800 rounded-md text-xs font-medium border border-blue-200">
+                  Subject: <span className="font-semibold truncate max-w-[150px]">{categories.subjects.find(s => s.id === selectedSubject)?.name || 'Selected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSubject('')}
+                    className="hover:text-red-600 p-0.5 rounded transition-colors"
+                    title="Remove subject filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
+              {selectedType && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-800 rounded-md text-xs font-medium border border-blue-200">
+                  Category: <span className="font-semibold">{categories.materialTypes.find(t => t.id === selectedType)?.name || 'Selected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedType('')}
+                    className="hover:text-red-600 p-0.5 rounded transition-colors"
+                    title="Remove category filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
