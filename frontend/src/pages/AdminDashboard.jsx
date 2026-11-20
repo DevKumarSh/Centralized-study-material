@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Shield, CheckCircle2, XCircle, Clock, Users,
-  Download, Search, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert, AlertCircle, FileText
+  Download, Search, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert, AlertCircle, FileText,
+  Pencil, BookOpen, GraduationCap
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +35,23 @@ const AdminDashboard = () => {
   const [materialsFilterStatus, setMaterialsFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
+
+  // Curriculum Management states
+  const [curriculumTab, setCurriculumTab] = useState('courses'); // 'courses' | 'subjects'
+  const [showAddCourseForm, setShowAddCourseForm] = useState(false);
+  const [showAddSubjectForm, setShowAddSubjectForm] = useState(false);
+  const [courseSearchTerm, setCourseSearchTerm] = useState('');
+  const [subjectSearchTerm, setSubjectSearchTerm] = useState('');
+  const [subjectFilterCourse, setSubjectFilterCourse] = useState('all');
+  const [subjectFilterSemester, setSubjectFilterSemester] = useState('all');
+
+  // Course Edit & Delete Modal states
+  const [editCourseModal, setEditCourseModal] = useState({ isOpen: false, id: null, name: '', code: '' });
+  const [deleteCourseModal, setDeleteCourseModal] = useState({ isOpen: false, id: null, name: '', code: '', subjectCount: 0 });
+
+  // Subject Edit & Delete Modal states
+  const [editSubjectModal, setEditSubjectModal] = useState({ isOpen: false, id: null, name: '', code: '', course_id: '', semester_id: '' });
+  const [deleteSubjectModal, setDeleteSubjectModal] = useState({ isOpen: false, id: null, name: '', code: '' });
 
   // UI / Action states
   const [loading, setLoading] = useState(true);
@@ -178,6 +196,7 @@ const AdminDashboard = () => {
       setNewCourse({ name: '', code: '' });
       const catData = await api.getCategories();
       setCategories(catData);
+      setShowAddCourseForm(false);
     } catch (err) {
       showToast(err.message || 'Failed to create course', 'error');
     } finally {
@@ -198,12 +217,162 @@ const AdminDashboard = () => {
       setNewSubject({ name: '', code: '', course_id: '', semester_id: '' });
       const catData = await api.getCategories();
       setCategories(catData);
+      setShowAddSubjectForm(false);
     } catch (err) {
       showToast(err.message || 'Failed to create subject', 'error');
     } finally {
       setCategorySubmitting(false);
     }
   };
+
+  // Course Management Handlers
+  const handleOpenEditCourse = (course) => {
+    setEditCourseModal({
+      isOpen: true,
+      id: course.id,
+      name: course.name,
+      code: course.code
+    });
+  };
+
+  const handleUpdateCourse = async (e) => {
+    e.preventDefault();
+    if (!editCourseModal.name || !editCourseModal.code) return;
+    setActionLoadingId(editCourseModal.id);
+    try {
+      const updated = await api.updateCourse(editCourseModal.id, {
+        name: editCourseModal.name,
+        code: editCourseModal.code
+      });
+      showToast(`Course "${updated.code}" updated successfully!`);
+      setCategories(prev => ({
+        ...prev,
+        courses: prev.courses.map(c => c.id === updated.id ? updated : c)
+      }));
+      setEditCourseModal({ isOpen: false, id: null, name: '', code: '' });
+    } catch (err) {
+      showToast(err.message || 'Failed to update course', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleOpenDeleteCourse = (course) => {
+    const subCount = categories.subjects.filter(s => s.course_id === course.id).length;
+    setDeleteCourseModal({
+      isOpen: true,
+      id: course.id,
+      name: course.name,
+      code: course.code,
+      subjectCount: subCount
+    });
+  };
+
+  const handleConfirmDeleteCourse = async () => {
+    if (!deleteCourseModal.id) return;
+    setActionLoadingId(deleteCourseModal.id);
+    try {
+      await api.deleteCourse(deleteCourseModal.id);
+      showToast(`Course "${deleteCourseModal.code}" deleted successfully!`);
+      const catData = await api.getCategories();
+      setCategories(catData);
+      setDeleteCourseModal({ isOpen: false, id: null, name: '', code: '', subjectCount: 0 });
+    } catch (err) {
+      showToast(err.message || 'Failed to delete course', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Subject Management Handlers
+  const handleOpenEditSubject = (subject) => {
+    setEditSubjectModal({
+      isOpen: true,
+      id: subject.id,
+      name: subject.name,
+      code: subject.code,
+      course_id: subject.course_id,
+      semester_id: subject.semester_id
+    });
+  };
+
+  const handleUpdateSubject = async (e) => {
+    e.preventDefault();
+    if (!editSubjectModal.name || !editSubjectModal.code || !editSubjectModal.course_id || !editSubjectModal.semester_id) {
+      showToast('Please fill all fields', 'error');
+      return;
+    }
+    setActionLoadingId(editSubjectModal.id);
+    try {
+      const updated = await api.updateSubject(editSubjectModal.id, {
+        name: editSubjectModal.name,
+        code: editSubjectModal.code,
+        course_id: editSubjectModal.course_id,
+        semester_id: editSubjectModal.semester_id
+      });
+      showToast(`Subject "${updated.code}" updated successfully!`);
+      setCategories(prev => ({
+        ...prev,
+        subjects: prev.subjects.map(s => s.id === updated.id ? updated : s)
+      }));
+      setEditSubjectModal({ isOpen: false, id: null, name: '', code: '', course_id: '', semester_id: '' });
+    } catch (err) {
+      showToast(err.message || 'Failed to update subject', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleOpenDeleteSubject = (subject) => {
+    setDeleteSubjectModal({
+      isOpen: true,
+      id: subject.id,
+      name: subject.name,
+      code: subject.code
+    });
+  };
+
+  const handleConfirmDeleteSubject = async () => {
+    if (!deleteSubjectModal.id) return;
+    setActionLoadingId(deleteSubjectModal.id);
+    try {
+      await api.deleteSubject(deleteSubjectModal.id);
+      showToast(`Subject "${deleteSubjectModal.code}" deleted successfully!`);
+      setCategories(prev => ({
+        ...prev,
+        subjects: prev.subjects.filter(s => s.id !== deleteSubjectModal.id)
+      }));
+      setDeleteSubjectModal({ isOpen: false, id: null, name: '', code: '' });
+    } catch (err) {
+      showToast(err.message || 'Failed to delete subject', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Lookup maps and filter computation
+  const courseMap = {};
+  categories.courses.forEach(c => { courseMap[c.id] = c; });
+  const semesterMap = {};
+  categories.semesters.forEach(s => { semesterMap[s.id] = s; });
+
+  const filteredCourses = categories.courses.filter(c => {
+    if (!courseSearchTerm) return true;
+    const term = courseSearchTerm.toLowerCase();
+    return c.name.toLowerCase().includes(term) || c.code.toLowerCase().includes(term);
+  });
+
+  const filteredSubjectsList = categories.subjects.filter(s => {
+    if (subjectFilterCourse !== 'all' && s.course_id !== subjectFilterCourse) return false;
+    if (subjectFilterSemester !== 'all' && s.semester_id !== subjectFilterSemester) return false;
+    if (subjectSearchTerm) {
+      const term = subjectSearchTerm.toLowerCase();
+      const matchName = s.name.toLowerCase().includes(term);
+      const matchCode = s.code.toLowerCase().includes(term);
+      return matchName || matchCode;
+    }
+    return true;
+  });
 
   const handlePreview = async (item) => {
     try {
@@ -569,126 +738,366 @@ const AdminDashboard = () => {
 
       {/* TAB 3: CURRICULUM MANAGEMENT */}
       {activeTab === 'categories' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Create Course Form */}
-          <div className="bg-white p-5 sm:p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-blue-600" /> Add Academic Course / Program
-            </h3>
-            <form onSubmit={handleCreateCourse} className="space-y-3.5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newCourse.name}
-                  onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
-                  placeholder="e.g. Master of Science in Data Science"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Code / Short Form</label>
-                <input
-                  type="text"
-                  required
-                  value={newCourse.code}
-                  onChange={(e) => setNewCourse({ ...newCourse, code: e.target.value })}
-                  placeholder="e.g. MSc-DS"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                />
-              </div>
+        <div className="bg-white rounded-xl border border-gray-200/90 shadow-xs overflow-hidden space-y-5 p-4 sm:p-6">
+          {/* Sub Header & Segmented Tab Navigation */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Curriculum & Academic Structure</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                Manage degrees, academic programs, and semester curriculum subjects.
+              </p>
+            </div>
+            <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs font-medium self-start sm:self-auto">
               <button
-                type="submit"
-                disabled={categorySubmitting}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-2xs transition-colors disabled:opacity-50"
+                type="button"
+                onClick={() => setCurriculumTab('courses')}
+                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                  curriculumTab === 'courses'
+                    ? 'bg-white text-gray-900 shadow-2xs font-semibold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                Create Course
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                Courses ({categories.courses.length})
               </button>
-            </form>
-
-            <div className="pt-3 border-t border-gray-100">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Active Courses</p>
-              <div className="flex flex-wrap gap-2">
-                {categories.courses.map(c => (
-                  <span key={c.id} className="px-2.5 py-1 rounded text-xs bg-gray-100 border border-gray-200 text-gray-700 font-mono">
-                    {c.code}
-                  </span>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setCurriculumTab('subjects')}
+                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                  curriculumTab === 'subjects'
+                    ? 'bg-white text-gray-900 shadow-2xs font-semibold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                Subjects ({categories.subjects.length})
+              </button>
             </div>
           </div>
 
-          {/* Create Subject Form */}
-          <div className="bg-white p-5 sm:p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-blue-600" /> Add Subject to Curriculum
-            </h3>
-            <form onSubmit={handleCreateSubject} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Course</label>
+          {/* SUB-TAB 1: COURSES */}
+          {curriculumTab === 'courses' && (
+            <div className="space-y-4">
+              {/* Courses Toolbar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={courseSearchTerm}
+                    onChange={(e) => setCourseSearchTerm(e.target.value)}
+                    placeholder="Search courses..."
+                    className="w-full pl-9 pr-3 py-1.5 bg-gray-50 focus:bg-white border border-gray-200 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCourseForm(!showAddCourseForm)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-2xs transition-colors self-end sm:self-auto"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {showAddCourseForm ? 'Close Form' : 'Add New Course'}
+                </button>
+              </div>
+
+              {/* Add Course Collapsible Form */}
+              {showAddCourseForm && (
+                <div className="bg-blue-50/40 border border-blue-100 p-4 rounded-xl space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+                    <Plus className="w-3.5 h-3.5 text-blue-600" /> Add Academic Course / Program
+                  </h4>
+                  <form onSubmit={handleCreateCourse} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <div className="sm:col-span-4">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Course Code</label>
+                      <input
+                        type="text"
+                        required
+                        value={newCourse.code}
+                        onChange={(e) => setNewCourse({ ...newCourse, code: e.target.value })}
+                        placeholder="e.g. MCA, BTECH"
+                        className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                      />
+                    </div>
+                    <div className="sm:col-span-6">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Full Program Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={newCourse.name}
+                        onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
+                        placeholder="e.g. Master of Computer Applications"
+                        className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <button
+                        type="submit"
+                        disabled={categorySubmitting}
+                        className="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-2xs transition-colors disabled:opacity-50"
+                      >
+                        {categorySubmitting ? 'Adding...' : 'Save Course'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Courses Table */}
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-left text-sm text-gray-700">
+                  <thead className="bg-gray-50 text-xs uppercase font-semibold text-gray-500 border-b border-gray-200 tracking-wider">
+                    <tr>
+                      <th className="px-4 py-3">Code</th>
+                      <th className="px-4 py-3">Program / Degree Name</th>
+                      <th className="px-4 py-3">Curriculum Subjects</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredCourses.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="px-4 py-8 text-center text-gray-500 text-xs">
+                          No courses found. Click "Add New Course" to create one.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredCourses.map((c) => {
+                        const count = categories.subjects.filter(s => s.course_id === c.id).length;
+                        return (
+                          <tr key={c.id} className="hover:bg-gray-50/70 transition-colors">
+                            <td className="px-4 py-3">
+                              <span className="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-blue-50 text-blue-700 border border-blue-200/80">
+                                {c.code}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-gray-900 text-sm">
+                              {c.name}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-600">
+                              <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium">
+                                {count} {count === 1 ? 'subject' : 'subjects'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditCourse(c)}
+                                  className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title={`Edit ${c.code}`}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenDeleteCourse(c)}
+                                  className="p-1.5 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                  title={`Delete ${c.code}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* SUB-TAB 2: SUBJECTS */}
+          {curriculumTab === 'subjects' && (
+            <div className="space-y-4">
+              {/* Subjects Toolbar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                  <div className="relative w-full sm:w-60">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={subjectSearchTerm}
+                      onChange={(e) => setSubjectSearchTerm(e.target.value)}
+                      placeholder="Search subject or code..."
+                      className="w-full pl-9 pr-3 py-1.5 bg-gray-50 focus:bg-white border border-gray-200 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                    />
+                  </div>
+
                   <select
-                    required
-                    value={newSubject.course_id}
-                    onChange={(e) => setNewSubject({ ...newSubject, course_id: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-blue-600"
+                    value={subjectFilterCourse}
+                    onChange={(e) => setSubjectFilterCourse(e.target.value)}
+                    className="py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
                   >
-                    <option value="">Select Course</option>
+                    <option value="all">All Courses</option>
                     {categories.courses.map(c => (
                       <option key={c.id} value={c.id}>{c.code}</option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Semester</label>
+
                   <select
-                    required
-                    value={newSubject.semester_id}
-                    onChange={(e) => setNewSubject({ ...newSubject, semester_id: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-blue-600"
+                    value={subjectFilterSemester}
+                    onChange={(e) => setSubjectFilterSemester(e.target.value)}
+                    className="py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
                   >
-                    <option value="">Select Semester</option>
+                    <option value="all">All Semesters</option>
                     {categories.semesters.map(s => (
                       <option key={s.id} value={s.id}>{s.label}</option>
                     ))}
                   </select>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddSubjectForm(!showAddSubjectForm)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-2xs transition-colors self-end sm:self-auto shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {showAddSubjectForm ? 'Close Form' : 'Add New Subject'}
+                </button>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Subject Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newSubject.name}
-                  onChange={(e) => setNewSubject({ ...newSubject, name: e.target.value })}
-                  placeholder="e.g. Distributed Operating Systems"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                />
-              </div>
+              {/* Add Subject Collapsible Form */}
+              {showAddSubjectForm && (
+                <div className="bg-indigo-50/40 border border-indigo-100 p-4 rounded-xl space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                    <Plus className="w-3.5 h-3.5 text-indigo-600" /> Add Subject to Curriculum
+                  </h4>
+                  <form onSubmit={handleCreateSubject} className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Course</label>
+                        <select
+                          required
+                          value={newSubject.course_id}
+                          onChange={(e) => setNewSubject({ ...newSubject, course_id: e.target.value })}
+                          className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
+                        >
+                          <option value="">Select Course</option>
+                          {categories.courses.map(c => (
+                            <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
+                          ))}
+                        </select>
+                      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Subject Code</label>
-                <input
-                  type="text"
-                  required
-                  value={newSubject.code}
-                  onChange={(e) => setNewSubject({ ...newSubject, code: e.target.value })}
-                  placeholder="e.g. MCA401"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                />
-              </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Semester</label>
+                        <select
+                          required
+                          value={newSubject.semester_id}
+                          onChange={(e) => setNewSubject({ ...newSubject, semester_id: e.target.value })}
+                          className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
+                        >
+                          <option value="">Select Semester</option>
+                          {categories.semesters.map(s => (
+                            <option key={s.id} value={s.id}>{s.label}</option>
+                          ))}
+                        </select>
+                      </div>
 
-              <button
-                type="submit"
-                disabled={categorySubmitting}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-2xs transition-colors disabled:opacity-50"
-              >
-                Add Subject
-              </button>
-            </form>
-          </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Subject Code</label>
+                        <input
+                          type="text"
+                          required
+                          value={newSubject.code}
+                          onChange={(e) => setNewSubject({ ...newSubject, code: e.target.value })}
+                          placeholder="e.g. MCA101"
+                          className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Subject Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={newSubject.name}
+                          onChange={(e) => setNewSubject({ ...newSubject, name: e.target.value })}
+                          placeholder="e.g. Database Management Systems"
+                          className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={categorySubmitting}
+                        className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium shadow-2xs transition-colors disabled:opacity-50"
+                      >
+                        {categorySubmitting ? 'Adding...' : 'Save Subject'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Subjects Table */}
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-left text-sm text-gray-700">
+                  <thead className="bg-gray-50 text-xs uppercase font-semibold text-gray-500 border-b border-gray-200 tracking-wider">
+                    <tr>
+                      <th className="px-4 py-3">Code</th>
+                      <th className="px-4 py-3">Subject Name</th>
+                      <th className="px-4 py-3">Course</th>
+                      <th className="px-4 py-3">Semester</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredSubjectsList.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-gray-500 text-xs">
+                          No subjects match the selected filters. Click "Add New Subject" to add one.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredSubjectsList.map((s) => (
+                        <tr key={s.id} className="hover:bg-gray-50/70 transition-colors">
+                          <td className="px-4 py-3">
+                            <span className="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
+                              {s.code}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900 text-sm">
+                            {s.name}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-700 font-medium">
+                            {courseMap[s.course_id]?.code || 'N/A'}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-600">
+                            {semesterMap[s.semester_id]?.label || 'N/A'}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditSubject(s)}
+                                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title={`Edit ${s.code}`}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteSubject(s)}
+                                className="p-1.5 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                title={`Delete ${s.code}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -833,6 +1242,183 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* EDIT COURSE MODAL */}
+      {editCourseModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 p-6 rounded-xl max-w-md w-full shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-blue-600" /> Edit Course / Program
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditCourseModal({ isOpen: false, id: null, name: '', code: '' })}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateCourse} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Course Code</label>
+                <input
+                  type="text"
+                  required
+                  value={editCourseModal.code}
+                  onChange={(e) => setEditCourseModal({ ...editCourseModal, code: e.target.value })}
+                  placeholder="e.g. MCA, BTECH"
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Program Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editCourseModal.name}
+                  onChange={(e) => setEditCourseModal({ ...editCourseModal, name: e.target.value })}
+                  placeholder="e.g. Master of Computer Applications"
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditCourseModal({ isOpen: false, id: null, name: '', code: '' })}
+                  className="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-xs font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoadingId === editCourseModal.id}
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-xs disabled:opacity-50"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE COURSE MODAL */}
+      <ConfirmModal
+        isOpen={deleteCourseModal.isOpen}
+        onClose={() => setDeleteCourseModal({ isOpen: false, id: null, name: '', code: '', subjectCount: 0 })}
+        onConfirm={handleConfirmDeleteCourse}
+        title={`Delete Course "${deleteCourseModal.code}"?`}
+        message={`Are you sure you want to delete "${deleteCourseModal.name}" (${deleteCourseModal.code})? ${deleteCourseModal.subjectCount > 0 ? `This will also remove its ${deleteCourseModal.subjectCount} associated subject(s).` : ''} Deletion will be blocked if any study materials are assigned to it.`}
+        confirmText="Delete Course"
+        isDestructive={true}
+        isLoading={actionLoadingId === deleteCourseModal.id}
+      />
+
+      {/* EDIT SUBJECT MODAL */}
+      {editSubjectModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 p-6 rounded-xl max-w-md w-full shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-blue-600" /> Edit Subject
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditSubjectModal({ isOpen: false, id: null, name: '', code: '', course_id: '', semester_id: '' })}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateSubject} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Course</label>
+                  <select
+                    required
+                    value={editSubjectModal.course_id}
+                    onChange={(e) => setEditSubjectModal({ ...editSubjectModal, course_id: e.target.value })}
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value="">Select Course</option>
+                    {categories.courses.map(c => (
+                      <option key={c.id} value={c.id}>{c.code}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Semester</label>
+                  <select
+                    required
+                    value={editSubjectModal.semester_id}
+                    onChange={(e) => setEditSubjectModal({ ...editSubjectModal, semester_id: e.target.value })}
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value="">Select Semester</option>
+                    {categories.semesters.map(s => (
+                      <option key={s.id} value={s.id}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Subject Code</label>
+                <input
+                  type="text"
+                  required
+                  value={editSubjectModal.code}
+                  onChange={(e) => setEditSubjectModal({ ...editSubjectModal, code: e.target.value })}
+                  placeholder="e.g. MCA101"
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Subject Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editSubjectModal.name}
+                  onChange={(e) => setEditSubjectModal({ ...editSubjectModal, name: e.target.value })}
+                  placeholder="e.g. Database Management Systems"
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditSubjectModal({ isOpen: false, id: null, name: '', code: '', course_id: '', semester_id: '' })}
+                  className="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-xs font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoadingId === editSubjectModal.id}
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-xs disabled:opacity-50"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE SUBJECT MODAL */}
+      <ConfirmModal
+        isOpen={deleteSubjectModal.isOpen}
+        onClose={() => setDeleteSubjectModal({ isOpen: false, id: null, name: '', code: '' })}
+        onConfirm={handleConfirmDeleteSubject}
+        title={`Delete Subject "${deleteSubjectModal.code}"?`}
+        message={`Are you sure you want to delete "${deleteSubjectModal.name}" (${deleteSubjectModal.code})? Deletion will be blocked if any study materials are assigned to it.`}
+        confirmText="Delete Subject"
+        isDestructive={true}
+        isLoading={actionLoadingId === deleteSubjectModal.id}
+      />
     </div>
   );
 };

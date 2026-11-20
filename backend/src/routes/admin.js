@@ -302,6 +302,94 @@ router.post('/categories/courses', requireAuth, requireAdmin, async (req, res) =
 });
 
 /**
+ * @route   PUT /api/admin/categories/courses/:id
+ * @desc    Update existing course
+ */
+router.put('/categories/courses/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, code } = req.body;
+    if (!name || !code) {
+      return res.status(400).json({ error: 'Course name and code are required' });
+    }
+
+    const { data, error } = await supabase
+      .from('courses')
+      .update({ name: name.trim(), code: code.trim().toUpperCase() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Update course error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to update course' });
+  }
+});
+
+/**
+ * @route   DELETE /api/admin/categories/courses/:id
+ * @desc    Delete course if no materials are linked
+ */
+router.delete('/categories/courses/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if any study materials are directly linked to this course
+    const { count: materialsCount, error: countErr } = await supabase
+      .from('materials')
+      .select('*', { count: 'exact', head: true })
+      .eq('course_id', id);
+
+    if (countErr) throw countErr;
+
+    if (materialsCount && materialsCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete course: ${materialsCount} study material(s) are linked to it. Please reassign or delete those materials first.`
+      });
+    }
+
+    // Check if any subjects under this course have materials attached
+    const { data: courseSubjects } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('course_id', id);
+
+    if (courseSubjects && courseSubjects.length > 0) {
+      const subjectIds = courseSubjects.map(s => s.id);
+      const { count: subjectMaterialsCount } = await supabase
+        .from('materials')
+        .select('*', { count: 'exact', head: true })
+        .in('subject_id', subjectIds);
+
+      if (subjectMaterialsCount && subjectMaterialsCount > 0) {
+        return res.status(400).json({
+          error: `Cannot delete course: ${subjectMaterialsCount} study material(s) are linked to subjects in this course. Please remove those materials first.`
+        });
+      }
+    }
+
+    // Clear profiles referencing this course
+    await supabase
+      .from('profiles')
+      .update({ course_id: null })
+      .eq('course_id', id);
+
+    const { error } = await supabase
+      .from('courses')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return res.status(200).json({ message: 'Course deleted successfully', id });
+  } catch (err) {
+    console.error('Delete course error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to delete course' });
+  }
+});
+
+/**
  * @route   POST /api/admin/categories/subjects
  * @desc    Create new subject
  */
@@ -327,6 +415,73 @@ router.post('/categories/subjects', requireAuth, requireAdmin, async (req, res) 
     return res.status(201).json(data);
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Failed to create subject' });
+  }
+});
+
+/**
+ * @route   PUT /api/admin/categories/subjects/:id
+ * @desc    Update existing subject
+ */
+router.put('/categories/subjects/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, code, course_id, semester_id } = req.body;
+    if (!name || !code || !course_id || !semester_id) {
+      return res.status(400).json({ error: 'Subject name, code, course, and semester are required' });
+    }
+
+    const { data, error } = await supabase
+      .from('subjects')
+      .update({
+        name: name.trim(),
+        code: code.trim().toUpperCase(),
+        course_id,
+        semester_id
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Update subject error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to update subject' });
+  }
+});
+
+/**
+ * @route   DELETE /api/admin/categories/subjects/:id
+ * @desc    Delete subject if no materials are linked
+ */
+router.delete('/categories/subjects/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if any study materials are linked to this subject
+    const { count: materialsCount, error: countErr } = await supabase
+      .from('materials')
+      .select('*', { count: 'exact', head: true })
+      .eq('subject_id', id);
+
+    if (countErr) throw countErr;
+
+    if (materialsCount && materialsCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete subject: ${materialsCount} study material(s) are linked to it. Please reassign or delete those materials first.`
+      });
+    }
+
+    const { error } = await supabase
+      .from('subjects')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return res.status(200).json({ message: 'Subject deleted successfully', id });
+  } catch (err) {
+    console.error('Delete subject error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to delete subject' });
   }
 });
 

@@ -109,8 +109,22 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(courseData)
   }),
+  updateCourse: (id, courseData) => fetchWithAuth(`/admin/categories/courses/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(courseData)
+  }),
+  deleteCourse: (id) => fetchWithAuth(`/admin/categories/courses/${id}`, {
+    method: 'DELETE'
+  }),
   createSubject: (subjectData) => fetchWithAuth('/admin/categories/subjects', {
     method: 'POST',
     body: JSON.stringify(subjectData)
+  }),
+  updateSubject: (id, subjectData) => fetchWithAuth(`/admin/categories/subjects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(subjectData)
+  }),
+  deleteSubject: (id) => fetchWithAuth(`/admin/categories/subjects/${id}`, {
+    method: 'DELETE'
   })
 };
