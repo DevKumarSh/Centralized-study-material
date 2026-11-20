@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Search, Upload, User, LogOut, LayoutDashboard, Shield, Menu, X, GraduationCap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 const StudentLayout = () => {
   const navigate = useNavigate();
@@ -186,7 +187,9 @@ const StudentLayout = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/* Footer */}

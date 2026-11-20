@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Shield, CheckCircle2, XCircle, Clock, Users,
-  Download, Search, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert, AlertCircle
+  Download, Search, Trash2, Plus, Eye, RefreshCw, Layers, Check, X, ShieldAlert, AlertCircle, FileText
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +11,7 @@ import { PdfPreviewModal } from '../components/common/PdfPreviewModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 
 const AdminDashboard = () => {
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'materials' | 'categories' | 'users'
 
   // Stats state
@@ -243,6 +244,39 @@ const AdminDashboard = () => {
     const term = userSearchTerm.toLowerCase();
     return (u.email || '').toLowerCase().includes(term) || (u.full_name || '').toLowerCase().includes(term);
   });
+
+  if (authLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p className="text-sm font-medium text-gray-500">Verifying administrator authorization...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-md mx-auto my-16 bg-white p-8 rounded-2xl border border-gray-200/90 shadow-xs text-center space-y-4">
+        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto border border-amber-200">
+          <ShieldAlert className="w-6 h-6" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Administrator Access Required</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            You do not have moderator or administrative permissions to access the Admin Console.
+          </p>
+        </div>
+        <div className="pt-2 flex justify-center gap-3">
+          <Link
+            to="/dashboard"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-2xs"
+          >
+            Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
