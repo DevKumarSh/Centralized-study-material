@@ -148,13 +148,13 @@ const Auth = () => {
             <GraduationCap className="w-5 h-5" />
           )}
         </div>
-        <h1 className="text-xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
           {mode === 'login' && 'Sign in to StudyMaterial'}
           {mode === 'register' && 'Create Student Account'}
           {mode === 'forgot' && 'Reset Your Password'}
           {mode === 'update-password' && 'Set New Password'}
         </h1>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm text-gray-500 mt-1">
           {mode === 'login' && 'Enter your credentials to access study materials and your dashboard'}
           {mode === 'register' && 'Join your college community to share and access verified materials'}
           {mode === 'forgot' && 'Enter your registered college email to receive a recovery link'}
@@ -225,14 +225,14 @@ const Auth = () => {
       )}
 
       {/* Main Form Card */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
+      <div className="bg-white p-6 sm:p-7 rounded-xl border border-gray-200/90 shadow-xs space-y-4">
         {/* Toggle tabs for Login / Register */}
         {(mode === 'login' || mode === 'register') && (
           <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
                 mode === 'login' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -241,7 +241,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => { setMode('register'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
                 mode === 'register' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -256,33 +256,33 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 transition-colors font-medium"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-4 h-4" />
               Back to Sign In
             </button>
-            <span className="text-xs text-blue-600 font-medium">
+            <span className="text-sm text-blue-600 font-medium">
               {mode === 'forgot' ? 'Password Help' : 'Account Recovery'}
             </span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Full Name *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Dev Kumar"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -291,18 +291,18 @@ const Auth = () => {
           {/* Email */}
           {mode !== 'update-password' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 College Email *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@college.edu"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -311,8 +311,8 @@ const Auth = () => {
           {/* Password with Eye Toggle */}
           {mode !== 'forgot' && (
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">
                   {mode === 'update-password' ? 'New Password *' : 'Password *'}
                 </label>
                 {mode === 'login' && (
@@ -323,14 +323,14 @@ const Auth = () => {
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Forgot Password?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -338,14 +338,14 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-9 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-9 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -354,11 +354,11 @@ const Auth = () => {
           {/* Confirm Password */}
           {mode === 'update-password' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Confirm New Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -366,7 +366,7 @@ const Auth = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -375,7 +375,7 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-2xs disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

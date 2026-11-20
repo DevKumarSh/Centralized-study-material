@@ -41,21 +41,21 @@ const StudentLayout = () => {
                   <span className="font-bold text-base tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors block leading-tight">
                     StudyMaterial
                   </span>
-                  <span className="text-[10px] text-gray-400 font-medium tracking-wide block uppercase">
+                  <span className="text-[11px] text-gray-500 font-medium tracking-wide block uppercase">
                     Academic Hub
                   </span>
                 </div>
               </Link>
 
               {/* Desktop Nav Links */}
-              <nav className="hidden md:flex items-center gap-1">
+              <nav className="hidden md:flex items-center gap-1.5">
                 {navLinks.map((link) => {
                   const isActive = location.pathname === link.path;
                   return (
                     <Link
                       key={link.path}
                       to={link.path}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                      className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                         link.adminOnly
                           ? isActive
                             ? 'bg-amber-50 text-amber-800 border border-amber-200 font-semibold'
@@ -65,7 +65,7 @@ const StudentLayout = () => {
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
-                      <link.icon className="w-3.5 h-3.5" />
+                      <link.icon className="w-4 h-4" />
                       {link.label}
                     </Link>
                   );
@@ -76,32 +76,32 @@ const StudentLayout = () => {
             {/* Search and User Controls */}
             <div className="flex items-center gap-3">
               {/* Quick Search */}
-              <form onSubmit={handleSearchSubmit} className="relative hidden sm:block w-48 md:w-60">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <form onSubmit={handleSearchSubmit} className="relative hidden sm:block w-48 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   value={navSearch}
                   onChange={(e) => setNavSearch(e.target.value)}
-                  placeholder="Quick search..."
-                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 hover:bg-white border border-gray-200 rounded-md text-xs text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
+                  placeholder="Quick search notes..."
+                  className="w-full pl-9 pr-3 py-1.5 bg-gray-50 hover:bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 />
               </form>
 
               {/* Auth Controls */}
               {user ? (
-                <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
+                <div className="flex items-center gap-2.5 pl-2.5 border-l border-gray-200">
                   <Link
                     to={isAdmin ? '/admin' : '/dashboard'}
-                    className="flex items-center gap-2 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-xs transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 text-sm font-medium transition-colors"
                   >
-                    <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-[10px]">
+                    <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
                       {user.email?.[0].toUpperCase()}
                     </div>
-                    <span className="text-gray-700 font-medium hidden lg:inline max-w-[110px] truncate">
+                    <span className="text-gray-800 font-medium hidden lg:inline max-w-[120px] truncate">
                       {profile?.full_name || user.email?.split('@')[0]}
                     </span>
                     {isAdmin && (
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">
+                      <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
                         Admin
                       </span>
                     )}
@@ -109,7 +109,7 @@ const StudentLayout = () => {
                   <button
                     onClick={() => signOut()}
                     title="Sign Out"
-                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -117,7 +117,7 @@ const StudentLayout = () => {
               ) : (
                 <Link
                   to="/auth"
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium transition-colors shadow-xs"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-2xs"
                 >
                   Sign In
                 </Link>
@@ -126,7 +126,7 @@ const StudentLayout = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+                className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -137,13 +137,13 @@ const StudentLayout = () => {
           {mobileMenuOpen && (
             <div className="md:hidden py-3 border-t border-gray-100 space-y-2">
               <form onSubmit={handleSearchSubmit} className="relative pb-2">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   value={navSearch}
                   onChange={(e) => setNavSearch(e.target.value)}
                   placeholder="Search materials..."
-                  className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                  className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </form>
               {navLinks.map((link) => (
@@ -151,7 +151,7 @@ const StudentLayout = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-100"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100"
                 >
                   <link.icon className="w-4 h-4 text-blue-600" />
                   {link.label}
@@ -169,14 +169,14 @@ const StudentLayout = () => {
 
       {/* Footer */}
       <footer className="w-full bg-white border-t border-gray-200/80 mt-auto py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <GraduationCap className="w-4 h-4 text-blue-600" />
             <span className="text-gray-900 font-medium">College Study Material Sharing Platform</span>
             <span className="text-gray-300">•</span>
             <span>MCA Academic Repository</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-xs sm:text-sm">
             <Link to="/browse" className="hover:text-gray-900 transition-colors">Library</Link>
             <Link to="/upload" className="hover:text-gray-900 transition-colors">Upload</Link>
             <Link to="/admin" className="hover:text-gray-900 transition-colors">Admin Portal</Link>

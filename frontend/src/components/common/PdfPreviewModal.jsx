@@ -28,19 +28,19 @@ export const PdfPreviewModal = ({ isOpen, onClose, url, title, fileName, onDownl
               <FileText className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900 truncate" title={title}>
+              <h3 className="text-base font-semibold text-gray-900 truncate" title={title}>
                 {title || 'Document Preview'}
               </h3>
-              <p className="text-[11px] text-gray-500 truncate">{fileName || 'PDF Document'}</p>
+              <p className="text-xs text-gray-500 truncate mt-0.5">{fileName || 'PDF Document'}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2.5 flex-shrink-0">
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium"
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1.5 text-sm font-medium"
               title="Open in new window"
             >
               <ExternalLink className="w-4 h-4" />
@@ -51,9 +51,9 @@ export const PdfPreviewModal = ({ isOpen, onClose, url, title, fileName, onDownl
               <button
                 type="button"
                 onClick={onDownload}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-2xs"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4" />
                 Download
               </button>
             )}
@@ -74,7 +74,7 @@ export const PdfPreviewModal = ({ isOpen, onClose, url, title, fileName, onDownl
           {loading && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-50/90 text-gray-500 gap-2">
               <Loader2 className="w-7 h-7 text-blue-600 animate-spin" />
-              <p className="text-xs font-medium text-gray-600">Loading document preview...</p>
+              <p className="text-sm font-medium text-gray-600">Loading document preview...</p>
             </div>
           )}
 
@@ -83,8 +83,8 @@ export const PdfPreviewModal = ({ isOpen, onClose, url, title, fileName, onDownl
               <div className="p-3 bg-red-50 text-red-600 rounded-full mb-3">
                 <AlertCircle className="w-8 h-8" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-1">Preview could not be loaded</h4>
-              <p className="text-xs text-gray-500 max-w-sm mb-4">
+              <h4 className="text-base font-semibold text-gray-900 mb-1.5">Preview could not be loaded</h4>
+              <p className="text-sm text-gray-600 max-w-sm mb-4 leading-relaxed">
                 Your browser may block embedded PDFs or the file format might not support inline viewing.
               </p>
               <div className="flex items-center gap-3">
@@ -92,18 +92,18 @@ export const PdfPreviewModal = ({ isOpen, onClose, url, title, fileName, onDownl
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-4 h-4" />
                   Open in New Tab
                 </a>
                 {onDownload && (
                   <button
                     type="button"
                     onClick={onDownload}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-lg text-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium transition-colors"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-4 h-4" />
                     Download File
                   </button>
                 )}

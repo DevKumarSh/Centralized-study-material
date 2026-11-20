@@ -127,48 +127,48 @@ const UploadPage = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Upload Study Material</h1>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Upload Study Material</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Submit lecture notes, question papers, or practical manuals for administrator verification and peer sharing.
         </p>
       </div>
 
       {/* Notifications */}
       {errorMsg && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-3 shadow-xs">
-          <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3 shadow-xs">
+          <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMsg}</div>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3 shadow-xs">
-          <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start gap-3 shadow-xs">
+          <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
           <div className="leading-relaxed">{successMsg}</div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200/90 shadow-xs space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-7 rounded-xl border border-gray-200/90 shadow-xs space-y-5">
         {/* Step 1: File Selection Area */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             PDF File *
           </label>
           {file ? (
             <div className="p-4 bg-blue-50/50 border border-blue-200 rounded-xl flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 bg-blue-600 text-white rounded-lg">
+                <div className="p-2.5 bg-blue-600 text-white rounded-lg">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{file.name}</p>
-                  <p className="text-[11px] text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB • Ready for cryptographic check</p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">{file.name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{(file.size / (1024 * 1024)).toFixed(2)} MB • Ready for cryptographic check</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={removeSelectedFile}
-                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-md transition-colors"
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors"
                 title="Remove file"
               >
                 <X className="w-4 h-4" />
@@ -187,10 +187,10 @@ const UploadPage = () => {
                   <Upload className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-800">
+                  <p className="text-sm font-medium text-gray-800">
                     <span className="text-blue-600 font-semibold">Click to upload</span> or drag and drop PDF
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-400 mt-1">
                     Standard PDF only • Up to 50MB • Verified with SHA-256
                   </p>
                 </div>
@@ -201,7 +201,7 @@ const UploadPage = () => {
 
         {/* Step 2: Document Title */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Document Title *
           </label>
           <input
@@ -210,7 +210,7 @@ const UploadPage = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Database Systems Complete Unit 1 & 2 Handwritten Notes"
-            className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           />
         </div>
 
@@ -218,7 +218,7 @@ const UploadPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Course */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Course *
             </label>
             <select
@@ -228,7 +228,7 @@ const UploadPage = () => {
                 setCourseId(e.target.value);
                 setSubjectId('');
               }}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">Select Course</option>
               {categories.courses.map(c => (
@@ -239,7 +239,7 @@ const UploadPage = () => {
 
           {/* Semester */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Semester *
             </label>
             <select
@@ -249,7 +249,7 @@ const UploadPage = () => {
                 setSemesterId(e.target.value);
                 setSubjectId('');
               }}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">Select Semester</option>
               {categories.semesters.map(s => (
@@ -260,7 +260,7 @@ const UploadPage = () => {
 
           {/* Subject */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Subject *
             </label>
             <select
@@ -268,7 +268,7 @@ const UploadPage = () => {
               value={subjectId}
               onChange={(e) => setSubjectId(e.target.value)}
               disabled={!courseId || !semesterId}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
             >
               <option value="">
                 {!courseId || !semesterId ? 'Select Course & Sem first' : 'Select Subject'}
@@ -283,14 +283,14 @@ const UploadPage = () => {
         {/* Step 4: Category and Academic Year */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Material Category *
             </label>
             <select
               required
               value={materialTypeId}
               onChange={(e) => setMaterialTypeId(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">Select Category</option>
               {categories.materialTypes.map(t => (
@@ -300,7 +300,7 @@ const UploadPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Academic Year
             </label>
             <input
@@ -308,14 +308,14 @@ const UploadPage = () => {
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
               placeholder="e.g. 2025-2026"
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             />
           </div>
         </div>
 
         {/* Step 5: Description */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Topics Covered / Summary (Optional)
           </label>
           <textarea
@@ -323,13 +323,13 @@ const UploadPage = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Briefly outline topics covered, syllabus unit numbers, or questions included..."
-            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 leading-relaxed"
           ></textarea>
         </div>
 
         {/* Step 6: Tags */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Search Tags (Comma-separated)
           </label>
           <input
@@ -337,15 +337,15 @@ const UploadPage = () => {
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="e.g. relational-algebra, b-trees, er-diagrams"
-            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           />
         </div>
 
         {/* Quality Notice */}
-        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-[11px] text-gray-500 flex items-start gap-2">
+        <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-600 flex items-start gap-2.5 leading-relaxed">
           <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <strong>Moderation Policy:</strong> Submissions are reviewed to verify scan readability and course alignment. Duplicate documents are automatically flagged.
+            <strong className="text-gray-900 font-semibold">Moderation Policy:</strong> Submissions are reviewed to verify scan readability and course alignment. Duplicate documents are automatically flagged.
           </div>
         </div>
 
@@ -354,7 +354,7 @@ const UploadPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-2xs disabled:opacity-50 flex items-center gap-2"
           >
             {submitting ? (
               <>

@@ -26,25 +26,25 @@ export const ConfirmModal = ({
           }`}>
             {isDestructive ? <Trash2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
           </div>
-          <div className="space-y-1 flex-1">
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">{message}</p>
+          <div className="space-y-1.5 flex-1">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">{title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded-md"
+            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-xs font-medium transition-colors"
+            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
           >
             {cancelText}
           </button>
@@ -52,7 +52,7 @@ export const ConfirmModal = ({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium shadow-2xs transition-colors flex items-center gap-2 ${
               isDestructive
                 ? 'bg-rose-600 hover:bg-rose-700 text-white'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'

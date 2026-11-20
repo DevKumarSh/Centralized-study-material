@@ -228,7 +228,7 @@ const Browse = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Course */}
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
                 Course
               </label>
@@ -239,7 +239,7 @@ const Browse = () => {
                     setSelectedCourse(e.target.value);
                     setSelectedSubject('');
                   }}
-                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
                     selectedCourse ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -254,7 +254,7 @@ const Browse = () => {
 
             {/* Semester */}
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
                 Semester
               </label>
@@ -265,7 +265,7 @@ const Browse = () => {
                     setSelectedSemester(e.target.value);
                     setSelectedSubject('');
                   }}
-                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
                     selectedSemester ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -280,7 +280,7 @@ const Browse = () => {
 
             {/* Subject */}
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5 text-gray-400" />
                 Subject
               </label>
@@ -288,7 +288,7 @@ const Browse = () => {
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
-                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
                     selectedSubject ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -303,7 +303,7 @@ const Browse = () => {
 
             {/* Material Type */}
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-gray-400" />
                 Category
               </label>
@@ -311,7 +311,7 @@ const Browse = () => {
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
+                  className={`w-full appearance-none pl-3 pr-8 py-2 bg-white border rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 ${
                     selectedType ? 'border-blue-300 text-blue-900 bg-blue-50/20 font-semibold' : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -455,32 +455,32 @@ const Browse = () => {
 
                 {/* Title and description */}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
+                  <h3 className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
                     {item.title}
                   </h3>
                   {item.description && (
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   )}
                 </div>
 
                 {/* Academic Metadata */}
-                <div className="pt-2.5 border-t border-gray-100 space-y-1 text-xs">
+                <div className="pt-2.5 border-t border-gray-100 space-y-1.5 text-xs sm:text-sm">
                   <div className="flex items-center gap-1.5 text-gray-600">
-                    <span className="font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 border border-gray-200 text-[10px]">
+                    <span className="font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800 border border-gray-200 text-xs">
                       {item.courses?.code || 'Course'}
                     </span>
-                    <span>{item.semesters?.label || 'Semester'}</span>
+                    <span className="text-xs sm:text-sm">{item.semesters?.label || 'Semester'}</span>
                     {item.academic_year && (
                       <>
                         <span className="text-gray-300">•</span>
-                        <span className="text-gray-400">{item.academic_year}</span>
+                        <span className="text-gray-500 text-xs">{item.academic_year}</span>
                       </>
                     )}
                   </div>
                   {item.subjects?.name && (
-                    <div className="text-gray-800 font-medium truncate">
+                    <div className="text-gray-900 font-medium text-sm truncate">
                       {item.subjects.name}
                     </div>
                   )}
@@ -489,18 +489,18 @@ const Browse = () => {
 
               {/* Bottom Actions */}
               <div className="pt-3.5 mt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                <div className="text-[11px] text-gray-400 truncate flex items-center gap-1.5">
-                  <div className="w-4 h-4 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-[9px]">
+                <div className="text-xs text-gray-500 truncate flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center font-bold text-xs">
                     {item.profiles?.full_name?.[0] || 'S'}
                   </div>
                   <span className="truncate">{item.profiles?.full_name || 'Student'}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => handlePreview(item)}
                     disabled={downloadingId === item.id}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-medium transition-colors"
                     title="Preview PDF"
                   >
                     <Eye className="w-3.5 h-3.5" />
@@ -509,7 +509,7 @@ const Browse = () => {
                   <button
                     onClick={() => handleDownload(item.id, item.material_files?.file_name)}
                     disabled={downloadingId === item.id}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-2xs"
                     title="Download PDF"
                   >
                     {downloadingId === item.id ? (
