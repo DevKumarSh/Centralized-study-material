@@ -86,7 +86,7 @@ const Browse = () => {
   const handlePreview = async (item) => {
     try {
       setDownloadingId(item.id);
-      const res = await api.getDownloadUrl(item.id);
+      const res = await api.getPreviewUrl(item.id);
       if (res.downloadUrl) {
         setPreviewModal({
           isOpen: true,

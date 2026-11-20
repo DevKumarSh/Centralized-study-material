@@ -69,6 +69,7 @@ export const api = {
     body: formData
   }),
   getDownloadUrl: (id) => fetchWithAuth(`/materials/${id}/download`),
+  getPreviewUrl: (id) => fetchWithAuth(`/materials/${id}/download?inline=true`),
 
   // Stats
   getStats: () => fetchWithAuth('/stats'),

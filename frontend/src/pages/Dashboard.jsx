@@ -42,7 +42,7 @@ const Dashboard = () => {
 
   const handlePreview = async (item) => {
     try {
-      const res = await api.getDownloadUrl(item.id);
+      const res = await api.getPreviewUrl(item.id);
       if (res.downloadUrl) {
         setPreviewModal({
           isOpen: true,

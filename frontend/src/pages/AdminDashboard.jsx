@@ -206,7 +206,7 @@ const AdminDashboard = () => {
 
   const handlePreview = async (item) => {
     try {
-      const res = await api.getDownloadUrl(item.id);
+      const res = await api.getPreviewUrl(item.id);
       if (res.downloadUrl) {
         setPreviewModal({
           isOpen: true,
@@ -218,6 +218,23 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       showToast('Failed to retrieve file preview link', 'error');
+    }
+  };
+
+  const handleDownload = async (materialId, fileName) => {
+    try {
+      const res = await api.getDownloadUrl(materialId);
+      if (res.downloadUrl) {
+        const a = document.createElement('a');
+        a.href = res.downloadUrl;
+        a.download = fileName || 'study-material.pdf';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (err) {
+      showToast('Download failed', 'error');
     }
   };
 
@@ -712,6 +729,7 @@ const AdminDashboard = () => {
         url={previewModal.url}
         title={previewModal.title}
         fileName={previewModal.fileName}
+        onDownload={() => handleDownload(previewModal.materialId, previewModal.fileName)}
       />
 
       {/* CONFIRM DELETE MODAL */}

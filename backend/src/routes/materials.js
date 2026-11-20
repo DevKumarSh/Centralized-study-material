@@ -355,11 +355,12 @@ router.post('/upload', requireAuth, upload.single('file'), async (req, res) => {
 
 /**
  * @route   GET /api/materials/:id/download
- * @desc    Generate download / preview URL and increment download counter
+ * @desc    Generate download / preview URL and increment download counter (unless preview)
  */
 router.get('/:id/download', optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const isInline = req.query.inline === 'true';
 
     // Fetch material and file info
     const { data: material, error } = await supabase
@@ -372,29 +373,32 @@ router.get('/:id/download', optionalAuth, async (req, res) => {
       return res.status(404).json({ error: 'Material file not found' });
     }
 
-    // Increment download count
-    await supabase
-      .from('materials')
-      .update({ download_count: (material.download_count || 0) + 1 })
-      .eq('id', id);
+    // Only increment download count and log if it's an actual download (not inline preview)
+    if (!isInline) {
+      // Increment download count
+      await supabase
+        .from('materials')
+        .update({ download_count: (material.download_count || 0) + 1 })
+        .eq('id', id);
 
-    // Record download log
-    if (req.user) {
-      try {
-        await supabase
-          .from('downloads')
-          .insert({ material_id: id, user_id: req.user.id });
-      } catch (logErr) {
-        console.warn('Download log warning:', logErr.message);
+      // Record download log
+      if (req.user) {
+        try {
+          await supabase
+            .from('downloads')
+            .insert({ material_id: id, user_id: req.user.id });
+        } catch (logErr) {
+          console.warn('Download log warning:', logErr.message);
+        }
       }
     }
 
     // Generate signed download URL (valid for 1 hour)
+    // For inline previews, omit download option so Supabase does not force Content-Disposition: attachment
+    const signOptions = isInline ? {} : { download: material.material_files.file_name };
     const { data: signedData, error: signError } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .createSignedUrl(material.material_files.storage_path, 3600, {
-        download: material.material_files.file_name
-      });
+      .createSignedUrl(material.material_files.storage_path, 3600, signOptions);
 
     if (signError || !signedData?.signedUrl) {
       // Fallback to public URL
