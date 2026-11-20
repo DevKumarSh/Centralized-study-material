@@ -62,7 +62,6 @@ const Browse = () => {
       setDownloadingId(materialId);
       const res = await api.getDownloadUrl(materialId);
       if (res.downloadUrl) {
-        // Open download link in new tab or trigger download
         const a = document.createElement('a');
         a.href = res.downloadUrl;
         a.download = fileName || 'study-material.pdf';
@@ -71,7 +70,6 @@ const Browse = () => {
         a.click();
         document.body.removeChild(a);
 
-        // Update local download count
         setMaterials(prev => prev.map(m => m.id === materialId ? { ...m, download_count: (m.download_count || 0) + 1 } : m));
       }
     } catch (err) {
@@ -91,7 +89,6 @@ const Browse = () => {
     setSearchParams({});
   };
 
-  // Filtered subjects based on course and semester selection
   const availableSubjects = categories.subjects.filter(s => {
     if (selectedCourse && s.course_id !== selectedCourse) return false;
     if (selectedSemester && s.semester_id !== selectedSemester) return false;
@@ -100,23 +97,23 @@ const Browse = () => {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters Header */}
-      <div className="bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+      {/* Search and Filters Card */}
+      <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row gap-3 items-center">
           {/* Main Search Bar */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by title, subject, keywords (e.g. 'DBMS Unit 1', 'Algorithms')..."
-              className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm transition-all"
+              placeholder="Search by title, subject, topics (e.g. 'DBMS Unit 1', 'Algorithms')..."
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 hover:bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -126,7 +123,7 @@ const Browse = () => {
           {(selectedCourse || selectedSemester || selectedSubject || selectedType || searchTerm) && (
             <button
               onClick={clearFilters}
-              className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap"
+              className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap border border-gray-200"
             >
               <X className="w-3.5 h-3.5" /> Clear Filters
             </button>
@@ -134,17 +131,17 @@ const Browse = () => {
         </div>
 
         {/* Dropdown Filters */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          {/* Course Filter */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 border-t border-gray-100">
+          {/* Course */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Course</label>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1">Course</label>
             <select
               value={selectedCourse}
               onChange={(e) => {
                 setSelectedCourse(e.target.value);
                 setSelectedSubject('');
               }}
-              className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">All Courses</option>
               {categories.courses.map(c => (
@@ -153,16 +150,16 @@ const Browse = () => {
             </select>
           </div>
 
-          {/* Semester Filter */}
+          {/* Semester */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Semester</label>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1">Semester</label>
             <select
               value={selectedSemester}
               onChange={(e) => {
                 setSelectedSemester(e.target.value);
                 setSelectedSubject('');
               }}
-              className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">All Semesters</option>
               {categories.semesters.map(s => (
@@ -171,13 +168,13 @@ const Browse = () => {
             </select>
           </div>
 
-          {/* Subject Filter */}
+          {/* Subject */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Subject</label>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1">Subject</label>
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">All Subjects</option>
               {availableSubjects.map(sub => (
@@ -186,13 +183,13 @@ const Browse = () => {
             </select>
           </div>
 
-          {/* Material Type Filter */}
+          {/* Material Type */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Material Type</label>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1">Material Type</label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
             >
               <option value="">All Types</option>
               {categories.materialTypes.map(t => (
@@ -203,76 +200,76 @@ const Browse = () => {
         </div>
       </div>
 
-      {/* Materials List */}
+      {/* Materials Results Area */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <span>Found <strong className="text-white">{materials.length}</strong> study materials</span>
-          <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> Admin-verified only</span>
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>Showing <strong className="text-gray-900">{materials.length}</strong> verified study materials</span>
+          <span className="flex items-center gap-1 text-emerald-700 font-medium"><CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Admin-verified</span>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-48 bg-slate-900/60 rounded-2xl animate-pulse border border-slate-800"></div>
+              <div key={i} className="h-44 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
             ))}
           </div>
         ) : materials.length === 0 ? (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center">
-            <div className="w-12 h-12 bg-slate-800 text-slate-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <BookOpen className="w-6 h-6" />
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+            <div className="w-10 h-10 bg-gray-100 text-gray-400 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">No materials found</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              Try adjusting your search terms or clearing some filters.
+            <h3 className="text-sm font-semibold text-gray-900">No materials found</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+              Try adjusting your search terms or clearing selected category filters.
             </p>
             <button
               onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold"
+              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-sm transition-colors"
             >
               Reset Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {materials.map(item => (
               <div
                 key={item.id}
-                className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition-all p-5 flex flex-col justify-between group shadow-lg"
+                className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all p-5 flex flex-col justify-between group"
               >
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {/* Top Badges */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wide">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wide">
                       {item.material_types?.name || 'Notes'}
                     </span>
-                    <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
-                      <Download className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="text-xs text-gray-500 font-mono flex items-center gap-1">
+                      <Download className="w-3.5 h-3.5 text-gray-400" />
                       {item.download_count || 0}
                     </span>
                   </div>
 
                   {/* Title & Description */}
                   <div>
-                    <h3 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-2">
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
                       {item.title}
                     </h3>
                     {item.description && (
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                         {item.description}
                       </p>
                     )}
                   </div>
 
                   {/* Course & Semester info */}
-                  <div className="pt-2 border-t border-slate-800/80 space-y-1 text-xs text-slate-400">
+                  <div className="pt-2 border-t border-gray-100 space-y-0.5 text-xs text-gray-500">
                     <div className="flex items-center gap-1.5">
-                      <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-                      <span className="font-medium text-slate-300">{item.courses?.code || 'MCA'}</span>
+                      <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="font-medium text-gray-700">{item.courses?.code || 'Course'}</span>
                       <span>•</span>
                       <span>{item.semesters?.label || 'Semester'}</span>
                     </div>
                     {item.subjects?.name && (
-                      <div className="text-slate-300 font-medium truncate">
+                      <div className="text-gray-700 font-medium truncate">
                         {item.subjects.name}
                       </div>
                     )}
@@ -280,17 +277,17 @@ const Browse = () => {
                 </div>
 
                 {/* Bottom Action / Download */}
-                <div className="pt-4 mt-3 border-t border-slate-800/60 flex items-center justify-between gap-2">
-                  <div className="text-[11px] text-slate-500 truncate">
+                <div className="pt-3.5 mt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                  <div className="text-[11px] text-gray-400 truncate">
                     Uploaded by {item.profiles?.full_name || 'Student'}
                   </div>
                   <button
                     onClick={() => handleDownload(item.id, item.material_files?.file_name)}
                     disabled={downloadingId === item.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
                   >
                     {downloadingId === item.id ? (
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <>
                         <Download className="w-3.5 h-3.5" />

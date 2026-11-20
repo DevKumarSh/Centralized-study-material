@@ -65,12 +65,11 @@ const Auth = () => {
         setTimeout(() => navigate('/dashboard'), 800);
       } else if (mode === 'register') {
         const res = await signUp(email, password, fullName);
-        // If Supabase has email confirmation enabled, session will be null
         if (res.user && !res.session) {
           setVerificationPendingEmail(email);
           setShowResend(true);
           setSuccessMsg(
-            `Account created! A confirmation email has been sent to "${email}". Please check your inbox (and spam/junk folder) and click the link to activate your account.`
+            `Account created! A confirmation email has been sent to "${email}". Please check your inbox and click the link to activate your account.`
           );
         } else {
           setSuccessMsg('Account registered and logged in!');
@@ -81,7 +80,7 @@ const Auth = () => {
           throw new Error('Please enter your registered email address.');
         }
         await resetPasswordForEmail(email);
-        setSuccessMsg(`Password reset link sent to "${email}". Please check your inbox and spam folder.`);
+        setSuccessMsg(`Password reset link sent to "${email}". Please check your inbox.`);
       } else if (mode === 'update-password') {
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -128,7 +127,7 @@ const Auth = () => {
     setErrorMsg('');
     try {
       await resendVerificationEmail(targetEmail);
-      setSuccessMsg(`Verification link resent to ${targetEmail}! Please check your inbox and spam folder.`);
+      setSuccessMsg(`Verification link resent to ${targetEmail}! Please check your inbox.`);
     } catch (err) {
       console.error('Resend error:', err);
       setErrorMsg(err.message || 'Failed to resend confirmation email. Please wait a minute and try again.');
@@ -138,39 +137,39 @@ const Auth = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 space-y-6">
+    <div className="max-w-md mx-auto py-8 space-y-5">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/20 mb-2">
+      <div className="text-center space-y-1.5">
+        <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 mx-auto mb-2">
           {mode === 'forgot' || mode === 'update-password' ? (
-            <KeyRound className="w-8 h-8" />
+            <KeyRound className="w-5 h-5" />
           ) : (
-            <BookOpen className="w-8 h-8" />
+            <BookOpen className="w-5 h-5" />
           )}
         </div>
-        <h1 className="text-2xl font-extrabold text-white">
+        <h1 className="text-xl font-bold text-gray-900">
           {mode === 'login' && 'Welcome Back'}
           {mode === 'register' && 'Create Student Account'}
           {mode === 'forgot' && 'Reset Your Password'}
           {mode === 'update-password' && 'Set New Password'}
         </h1>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-gray-500">
           {mode === 'login' && 'Sign in to access your study dashboard and uploaded materials'}
           {mode === 'register' && 'Join the college study material sharing community'}
-          {mode === 'forgot' && 'Enter your college email and we will send you a secure password reset link'}
+          {mode === 'forgot' && 'Enter your college email and we will send you a password reset link'}
           {mode === 'update-password' && 'Enter your new password below to regain access to your account'}
         </p>
       </div>
 
       {/* Alerts */}
       {errorMsg && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex flex-col gap-2">
+        <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex flex-col gap-2">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
 
-          <div className="pt-2 border-t border-rose-500/20 flex items-center justify-between gap-2 flex-wrap">
+          <div className="pt-2 border-t border-rose-200 flex items-center justify-between gap-2 flex-wrap">
             {mode === 'login' && (
               <button
                 type="button"
@@ -179,7 +178,7 @@ const Auth = () => {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="text-xs text-indigo-300 hover:text-white underline font-semibold"
+                className="text-xs text-blue-600 hover:text-blue-700 underline font-medium"
               >
                 Forgot your password?
               </button>
@@ -190,7 +189,7 @@ const Auth = () => {
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ml-auto"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-rose-100/50 text-rose-700 border border-rose-300 rounded text-xs font-medium transition-colors disabled:opacity-50 ml-auto"
               >
                 {resending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
                 Resend Confirmation
@@ -201,20 +200,20 @@ const Auth = () => {
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex flex-col gap-2">
+        <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex flex-col gap-2">
           <div className="flex items-start gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
 
           {showResend && (
-            <div className="pt-2 border-t border-emerald-500/20 flex items-center justify-between">
-              <span className="text-slate-400">Still waiting for link?</span>
+            <div className="pt-2 border-t border-emerald-200 flex items-center justify-between">
+              <span className="text-gray-600">Still waiting for link?</span>
               <button
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded text-xs font-medium transition-colors disabled:opacity-50"
               >
                 {resending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
                 Resend Again
@@ -225,15 +224,15 @@ const Auth = () => {
       )}
 
       {/* Main Card */}
-      <div className="bg-slate-900/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
         {/* Toggle tabs for Login / Register */}
         {(mode === 'login' || mode === 'register') && (
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                mode === 'login' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                mode === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Sign In
@@ -241,8 +240,8 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => { setMode('register'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                mode === 'register' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                mode === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Register
@@ -250,69 +249,69 @@ const Auth = () => {
           </div>
         )}
 
-        {/* Header link if in forgot or update-password mode */}
+        {/* Back button if in forgot or update-password mode */}
         {(mode === 'forgot' || mode === 'update-password') && (
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to Sign In
             </button>
-            <span className="text-xs text-indigo-400 font-semibold">
-              {mode === 'forgot' ? 'Password Assistance' : 'Account Recovery'}
+            <span className="text-xs text-blue-600 font-medium">
+              {mode === 'forgot' ? 'Password Help' : 'Account Recovery'}
             </span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {/* Full Name (Registration only) */}
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
                 Full Name *
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Dev Kumar"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
           )}
 
-          {/* Email field (for login, register, forgot) */}
+          {/* Email field */}
           {mode !== 'update-password' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
                 College Email *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="devsharmakumar74@gmail.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                  placeholder="name@college.edu"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
           )}
 
-          {/* Password field (for login, register, update-password) */}
+          {/* Password field */}
           {mode !== 'forgot' && (
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
                   {mode === 'update-password' ? 'New Password *' : 'Password *'}
                 </label>
                 {mode === 'login' && (
@@ -323,14 +322,14 @@ const Auth = () => {
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Forgot Password?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="password"
                   required
@@ -338,7 +337,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -347,11 +346,11 @@ const Auth = () => {
           {/* Confirm Password (update-password only) */}
           {mode === 'update-password' && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
                 Confirm New Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="password"
                   required
@@ -359,7 +358,7 @@ const Auth = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>
@@ -368,7 +367,7 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 mt-1 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -382,27 +381,21 @@ const Auth = () => {
             ) : mode === 'forgot' ? (
               'Send Password Reset Link'
             ) : (
-              'Update & Save Password'
+              'Save New Password'
             )}
           </button>
         </form>
 
-        {/* Helpful Tip Box */}
-        <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2">
-          <Info className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+        {/* Notice Box */}
+        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-600 flex items-start gap-2">
+          <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
             {mode === 'forgot' ? (
-              <span>
-                <strong>Reset Note:</strong> You will receive an email with a secure link to reset your password. Make sure to check your <em>Spam or Junk</em> folder.
-              </span>
+              <span>Check your email inbox and spam folder for the recovery link.</span>
             ) : mode === 'update-password' ? (
-              <span>
-                <strong>Security:</strong> Choose a strong password with at least 6 characters. You can immediately sign in with it afterward.
-              </span>
+              <span>Ensure your password is at least 6 characters with good complexity.</span>
             ) : (
-              <span>
-                <strong>Email Verification Notice:</strong> Supabase requires clicking the confirmation link sent to your email before you can log in. Check your <em>Spam or Junk</em> folder if you don't see it in your inbox.
-              </span>
+              <span>Supabase Authentication ensures secure sessions and data protection.</span>
             )}
           </div>
         </div>
